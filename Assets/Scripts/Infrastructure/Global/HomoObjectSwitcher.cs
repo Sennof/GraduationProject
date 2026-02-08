@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class HomoObjectSwitcher : MonoBehaviour
+public class HomoObjectSwitcher : MonoBehaviour, IInitializable
 {
     [Header("MAIN CORE")]
     [SerializeField] private List<HomoObjectContainer> _homoObjects;

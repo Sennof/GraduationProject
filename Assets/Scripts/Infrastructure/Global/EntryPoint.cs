@@ -1,3 +1,5 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class EntryPoint : MonoBehaviour
@@ -7,49 +9,46 @@ public class EntryPoint : MonoBehaviour
 
     private void Awake() // EARLY INITIALIZATION 
     {
-        EIHomoObjectSwitcher();
+        InitializeAll<HomoObjectSwitcher>();
+        InitializeAll<Inventory>();
     }
 
     private void Start() // LATE INITIALIZATION
     {
-        
+        InitializeAll<ItemObject>();
     }
 
-    #region EARLY INITIALIZATION
-    private void EIHomoObjectSwitcher()
+    #region Abstract
+    private void InitializeAll<T>() where T : Component, IInitializable
     {
-        HomoObjectSwitcher[] objs = GameObject.FindObjectsByType<HomoObjectSwitcher>(0);
-        if (objs == null)
+        string totalLog = string.Empty;
+
+        T[] objs = GameObject.FindObjectsByType<T>(FindObjectsInactive.Include, 0); // пример использования нового API
+        if (objs == null || objs.Length == 0)
         {
-            Debug.LogError("Failed to get HomoObjectSwitcher | EntryPoint");
+            Debug.LogWarning($"No objects of type {typeof(T).Name} found");
             return;
         }
 
-        int sCounter = 0;
-        int fCounter = 0;
-        foreach(HomoObjectSwitcher obj in objs)
+        int success = 0, fail = 0;
+        foreach (var obj in objs)
         {
             try
             {
                 obj.Initialize();
-                sCounter++;
+                success++;
+                totalLog += $"({success+fail}) Successfully initialized: {obj.name} | typeof {typeof(T).Name}\n";
             }
-            catch 
+            catch (Exception ex)
             {
-                Debug.LogError($"Failed to initialize HomoObjectSwitcher({obj.gameObject.name}) | EntryPoint" +
-                    $"\nError #{fCounter}");
-                fCounter++;
+                Debug.LogError($"Failed to initialize {obj.gameObject.name}: {ex}");
+                fail++;
+                totalLog += $"({success + fail}) Failed to initialize: {obj.name} | typeof {typeof(T).Name}\n";
             }
         }
-        Debug.Log($"Initialized {sCounter} HomoObjectSwitchers " +
-            $"\nFailed to initialize {fCounter}" +
-            $"\n| EntryPoint |\n");
+
+        totalLog += $"Initialized {success} {typeof(T).Name}(s), failed {fail}";
+        Debug.Log("[TOTAL INIT LOG]\n" + totalLog);
     }
-
-    #endregion
-
-
-    #region LATE INITIALIZATION
-
     #endregion
 }
