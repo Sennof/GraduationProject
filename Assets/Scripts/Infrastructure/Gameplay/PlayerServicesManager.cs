@@ -26,9 +26,9 @@ public class PlayerServicesManager : MonoBehaviour
             Zoom.Enable();
     }
 
-    public void TurnOffMovements() => FirstPersonMovement.Enable();
+    public void TurnOffMovements() => FirstPersonMovement.Disable();
 
-    public void TurnOnMovements() => FirstPersonMovement.Disable();
+    public void TurnOnMovements() => FirstPersonMovement.Enable();
 
     public void TurnOffAudio() => FirstPersonAudio.Disable();
 

@@ -28,7 +28,7 @@ public class FirstPersonMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (enabled)
+        if (_enabled == true)
         {
             // Update IsRunning from input.
             IsRunning = canRun && Input.GetKey(runningKey);

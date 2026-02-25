@@ -9,8 +9,19 @@ public class EntryPoint : MonoBehaviour
 
     private void Awake() // EARLY INITIALIZATION 
     {
+        //CORE BELOW
         InitializeAll<HomoObjectSwitcher>();
         InitializeAll<Inventory>();
+        InitializeAll<DeliveryManager>();
+
+        //UI BELOW
+        InitializeAll<InventoryUI>();
+        InitializeAll<ShopUIFactory>();
+        InitializeAll<UIShopSideMenu>();
+        InitializeAll<SearchEngine>();
+
+        //UI BELOW DELETE LATER (rewrite)
+        InitializeAll<UIWorkerCard>();
     }
 
     private void Start() // LATE INITIALIZATION
@@ -23,7 +34,7 @@ public class EntryPoint : MonoBehaviour
     {
         string totalLog = string.Empty;
 
-        T[] objs = GameObject.FindObjectsByType<T>(FindObjectsInactive.Include, 0); // пример использования нового API
+        T[] objs = GameObject.FindObjectsByType<T>(FindObjectsInactive.Include, 0);
         if (objs == null || objs.Length == 0)
         {
             Debug.LogWarning($"No objects of type {typeof(T).Name} found");

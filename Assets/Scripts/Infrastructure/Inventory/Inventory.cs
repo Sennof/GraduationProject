@@ -18,6 +18,12 @@ public class Inventory : MonoBehaviour, IInitializable
     [Tooltip("The key for droping an object")]
     [SerializeField] private KeyCode _dropTriggerey = KeyCode.Mouse1;
 
+    [Header("Control KeyCodes")]
+    [Tooltip("The key to set active first slot")]
+    [SerializeField] private KeyCode _firstSlotKeyCode = KeyCode.Alpha1;
+    [Tooltip("The key to set active second slot")]
+    [SerializeField] private KeyCode _secondSlotKeyCode = KeyCode.Alpha2;
+
     private EventBinding<ItemPickUpEvent> _itemPickUpEventBinding;
 
     private GameObject[] _keptItemGameObjects = new GameObject[2];
@@ -25,9 +31,11 @@ public class Inventory : MonoBehaviour, IInitializable
 
     private int _currentItemSlotIndex = 0;
     private bool _enabled = true;
-    #endregion
 
-    // Rewrite to ExitPoint (-entryPoint)
+    private int _targetSlot = 0; //value to change current slot via keypad
+    #endregion                   //if it changes current slot changes
+
+    // Rewrite to ExitPoint (as entryPoint)
     private void OnDisable()
     {
         EventBus<ItemPickUpEvent>.Deregister(_itemPickUpEventBinding);
@@ -46,17 +54,15 @@ public class Inventory : MonoBehaviour, IInitializable
 
         if (Input.GetAxis("Mouse ScrollWheel") != 0f)
         {
-            if (_keptItemGameObjects[_currentItemSlotIndex] != null)
-                _keptItemGameObjects[_currentItemSlotIndex].SetActive(false);
-
-            _currentItemSlotIndex = 1 - _currentItemSlotIndex;
-
-            if (_keptItemGameObjects[_currentItemSlotIndex] != null)
-                _keptItemGameObjects[_currentItemSlotIndex].SetActive(true);
-
-            _uiController.SelectSlot(_currentItemSlotIndex);
+            ChangeSlot();
         }
+
+        if (Input.GetKeyDown(_firstSlotKeyCode)) _targetSlot = 0;
+        else if (Input.GetKeyDown(_secondSlotKeyCode)) _targetSlot = 1;
+
+        if (_currentItemSlotIndex != _targetSlot) ChangeSlot();
     }
+
 
 
     public void Initialize()
@@ -70,6 +76,21 @@ public class Inventory : MonoBehaviour, IInitializable
         _itemPickUpEventBinding = new EventBinding<ItemPickUpEvent>(HandlePickUp);
         EventBus<ItemPickUpEvent>.Register(_itemPickUpEventBinding);
     }
+
+    private void ChangeSlot()
+    {
+        if (_keptItemGameObjects[_currentItemSlotIndex] != null)
+            _keptItemGameObjects[_currentItemSlotIndex].SetActive(false);
+
+        _currentItemSlotIndex = 1 - _currentItemSlotIndex;
+        _targetSlot = _currentItemSlotIndex;
+
+        if (_keptItemGameObjects[_currentItemSlotIndex] != null)
+            _keptItemGameObjects[_currentItemSlotIndex].SetActive(true);
+
+        _uiController.SelectSlot(_currentItemSlotIndex);
+    }
+
     public void ThrowObj()
     {
         if (_keptItemObjects[_currentItemSlotIndex] != null)

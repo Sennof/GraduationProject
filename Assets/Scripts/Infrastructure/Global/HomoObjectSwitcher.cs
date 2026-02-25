@@ -11,14 +11,19 @@ public class HomoObjectSwitcher : MonoBehaviour, IInitializable
 
     [SerializeField] private bool _turnOffAwake = true;
     [SerializeField] private bool _turnOnAwake = true;
-    [SerializeField] private int _onAwakeObjId = 0;
+    [SerializeField] private int _onAwakeObjId = 0; //id of a page that will be loaded on initialization
 
     [SerializeField] private bool _isActive = false;
-    [SerializeField] private KeyCode _triggerKey = KeyCode.Tab;
+    [SerializeField] private KeyCode _triggerKey = KeyCode.None;
 
     [Header("Side Actions (unnessesary)")]
     [SerializeField] private UnityEvent _actionsOnActivating;
     [SerializeField] private UnityEvent _actionsOnDisactivating;
+
+    [Header("IF UI")]
+    [SerializeField] private bool _isUI = false;
+    [Tooltip("Unnessesary if your script isnt used as UI switcher")]
+    [SerializeField] private UIChecking _uiChecking;
 
     private void Update()
     {
@@ -26,6 +31,8 @@ public class HomoObjectSwitcher : MonoBehaviour, IInitializable
         {
             if (!_isActive)
             {
+                if (_isUI & _uiChecking.GetState()) return;
+
                 SetOn(_onAwakeObjId);
                 if (_actionsOnActivating != null)
                     _actionsOnActivating.Invoke();
@@ -56,8 +63,17 @@ public class HomoObjectSwitcher : MonoBehaviour, IInitializable
             homoObj.Initialize();
         }
 
-        if(_turnOffAwake) OffAll();
+        if (_turnOffAwake) OffAll();
         if (_turnOnAwake) SetOn(_onAwakeObjId);
+    }
+
+    public void SetOnInWorld(int id)
+    {
+        if (_isUI & _uiChecking.GetState()) return;
+
+        SetOn(_onAwakeObjId);
+        if (_actionsOnActivating != null)
+            _actionsOnActivating.Invoke();
     }
 
     public void InvokeActivatingActions() => _actionsOnActivating?.Invoke();
@@ -84,6 +100,7 @@ public class HomoObjectSwitcher : MonoBehaviour, IInitializable
     public void SetOn(int id)
     {
         _homoObjects[id].TurnOn();
+        _homoObjects[id].InvokeActionsOnEnable();
         _currentIndex = id;
 
         _isActive = true;
