@@ -18,3 +18,8 @@ public struct DeliveryRequestingEvent : IEvent
     public int Amount;
     public ProductData ProductData;
 }
+
+public struct UnpackingEvent : IEvent
+{
+    public float Distance;
+}

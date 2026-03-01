@@ -36,9 +36,7 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
             _eventBinding = null;
         }
 
-        _titleText.text = "Âûבונטעו עמגאנ";
-        _descriptionText.text = "";
-        _amountText.text = "-";
+        ResetMenu();
 
         _eventBinding = new EventBinding<DeliveryShopOnClickEvent>(HandleProductClick);
         EventBus<DeliveryShopOnClickEvent>.Register(_eventBinding);
@@ -70,6 +68,8 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
 
         _deliveryRequestCooldownCor = StartCoroutine(DeliveryRequestCooldown(_productAmount + 1));
         EventBus<DeliveryRequestingEvent>.Raise(new DeliveryRequestingEvent { Amount = _productAmount, ProductData = _productData });
+
+        ResetMenu();
     }
 
     public void AddProductAmount()
@@ -88,6 +88,17 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
         _amountText.text = _productAmount.ToString();
     }
 
+    private void ResetMenu()
+    {
+        _productData = null;
+        _productAmount = 1;
+
+        _titleText.text = "Âûבונטעו עמגאנ";
+        _descriptionText.text = "";
+        _amountText.text = "-";
+        _deliveryRequestButton.interactable = false;
+    }
+
     private void HandleProductClick(DeliveryShopOnClickEvent eventData) => SetText(eventData.ProductData); 
 
     private void SetText(ProductData data)
@@ -99,6 +110,11 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
         _descriptionText.text = $"{data.Description}" +
             $"\n\nÖוםא חא רע.:{data.Price}";
         _amountText.text = _productAmount.ToString();
+        
+        if(_deliveryRequestCooldownCor == null)
+        {
+            _deliveryRequestButton.interactable = true;
+        }
     }
 
     private IEnumerator DeliveryRequestCooldown(int time)
@@ -112,5 +128,6 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
 
         _deliveryRequestButtonText.text = defaultText;
         _deliveryRequestButton.interactable = true;
+        _deliveryRequestCooldownCor = null;
     }
 }

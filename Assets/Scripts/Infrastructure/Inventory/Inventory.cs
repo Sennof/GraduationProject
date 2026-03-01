@@ -46,10 +46,10 @@ public class Inventory : MonoBehaviour, IInitializable
         if (!_enabled)
             return;
 
-        if (Input.GetKeyDown(_throwTriggerey) && _keptItemObjects[_currentItemSlotIndex] != null)
+        if (Input.GetKeyDown(_throwTriggerey))
             ThrowObj();
 
-        if (Input.GetKeyDown(_dropTriggerey) && _keptItemObjects[_currentItemSlotIndex] != null)
+        if (Input.GetKeyDown(_dropTriggerey))
             DropObj();
 
         if (Input.GetAxis("Mouse ScrollWheel") != 0f)
@@ -107,14 +107,17 @@ public class Inventory : MonoBehaviour, IInitializable
 
     public void DropObj()
     {
-        _keptItemGameObjects[_currentItemSlotIndex].transform.SetParent(_keptItemObjects[_currentItemSlotIndex].GetDefaultParent()
-            );
-        _keptItemObjects[_currentItemSlotIndex].Drop();
+        if (_keptItemObjects[_currentItemSlotIndex] != null)
+        {
+            _keptItemGameObjects[_currentItemSlotIndex].transform.SetParent(_keptItemObjects[_currentItemSlotIndex].GetDefaultParent()
+                );
+            _keptItemObjects[_currentItemSlotIndex].Drop();
 
-        _keptItemGameObjects[_currentItemSlotIndex] = null;
-        _keptItemObjects[_currentItemSlotIndex] = null;
+            _keptItemGameObjects[_currentItemSlotIndex] = null;
+            _keptItemObjects[_currentItemSlotIndex] = null;
 
-        _uiController.ClearIcon(_currentItemSlotIndex);
+            _uiController.ClearIcon(_currentItemSlotIndex);
+        }
     }
 
     public void HandlePickUp(ItemPickUpEvent eventData)

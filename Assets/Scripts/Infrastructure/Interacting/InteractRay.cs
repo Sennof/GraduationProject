@@ -40,7 +40,7 @@ public class InteractRay : MonoBehaviour
 
             Debug.Log($"hitted: {_hit.name} | InteractRay");
 
-            if (_target.GetActiveState() & _target.GetActDistance() >= _rayHit.distance)
+            if (_target.GetActiveState() & _target.GetActingDistance() >= _rayHit.distance)
             {
                 _hintText.text = $"ֽאזלטעו: {_target.GetTriggerKey()}";
 

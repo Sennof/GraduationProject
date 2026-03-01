@@ -4,6 +4,7 @@ using UnityEngine.Events;
 public class Interactable : MonoBehaviour
 {
     [SerializeField] private bool _enabled = true;
+    [SerializeField] private InteractableObjectTypeEnum _type;
     [SerializeField] private KeyCode _triggerKey = KeyCode.None;
     [SerializeField] private float _actDistance = 2.5f;
 
@@ -18,7 +19,9 @@ public class Interactable : MonoBehaviour
 
     public KeyCode GetTriggerKey() => _triggerKey;
 
-    public float GetActDistance() => _actDistance;
+    public float GetActingDistance() => _actDistance;
     
     public bool GetActiveState() => _enabled;
+
+    public InteractableObjectTypeEnum GetObjectType() => _type;
 }
