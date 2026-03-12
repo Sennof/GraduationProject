@@ -1,26 +1,54 @@
-using TMPro.EditorUtilities;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class ItemObject : MonoBehaviour, IInitializable
 {
+    #region Data Settings
+    [Header("Main Metadata")]
+    [SerializeField] private InteractableObjectTypeEnum _type;
+    [SerializeField] private ObjectSizeEnum _size;
     [SerializeField] private Sprite _icon;
+    #endregion
 
+    [Space(10)]
+
+    #region Physics Settings
+    [Header("Physics Components")]
     [SerializeField] private LayerMask _layerMask;
     [SerializeField] private Rigidbody _rigidbody;
     [SerializeField] private Collider _collider;
+    #endregion
 
+    [Space(10)]
+
+    #region Hierarchy Settings
+    [Header("Placement")]
     [SerializeField] private Transform _defaultParent;
+    #endregion
 
-    [Tooltip("UNNESSESARY (needs to be only if the object has)")]
+    [Space(10)]
+
+    #region Optional Components
+    [Header("Optional Modules")]
+
+    [Tooltip("UNNECESSARY (needs to be only if the object has)")]
     [SerializeField] private InteractingObject _interactingObject;
 
+    [Tooltip("UNNECESSARY (needs to be only if the object has)")]
+    [SerializeField] private BuildingObject _buildingObject;
+    #endregion
+
+    #region Internal State
     private Vector3 _scale;
+    #endregion
 
     public void Initialize()
     {
         _scale = transform.localScale;
         _defaultParent = transform.parent;
+
+        if (_buildingObject != null)
+            _buildingObject.Initialize(_defaultParent);
     }
 
     public void InvokePickUpEvent()
@@ -45,6 +73,10 @@ public class ItemObject : MonoBehaviour, IInitializable
         {
             _interactingObject.SetInHands();
         }
+        if (_buildingObject != null)
+        {
+            _buildingObject.SetInHands();
+        }
     }
 
     public void Throw()
@@ -57,6 +89,10 @@ public class ItemObject : MonoBehaviour, IInitializable
         if (_interactingObject != null)
         {
             _interactingObject.SetOutHands();
+        }
+        if (_buildingObject != null)
+        {
+            _buildingObject.SetOutHands();
         }
     }
 
@@ -71,10 +107,17 @@ public class ItemObject : MonoBehaviour, IInitializable
         {
             _interactingObject.SetOutHands();
         }
+        if (_buildingObject != null)
+        {
+            _buildingObject.SetOutHands();
+        }
     }
 
     public Sprite GetIcon() => _icon;
 
     public Transform GetDefaultParent() => _defaultParent;
 
+    public ObjectSizeEnum GetSize() => _size;
+
+    public InteractableObjectTypeEnum GetObjectType() => _type;
 }

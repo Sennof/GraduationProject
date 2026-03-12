@@ -26,7 +26,9 @@ public class UnpackingPlot : MonoBehaviour, IInitializable
     {
         if (_isEmpty == false) 
             return;
-        if (other.GetComponent<Interactable>().GetObjectType() != InteractableObjectTypeEnum.PackedBox)
+        if (other.CompareTag("packedBox") == false) 
+            return;
+        if (other.GetComponent<ItemObject>().GetObjectType() != InteractableObjectTypeEnum.PackedBox)
             return;
 
         _isEmpty = false;

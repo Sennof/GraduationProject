@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -7,10 +8,7 @@ public class EntryPoint : MonoBehaviour
     public static EntryPoint Instance { get; private set; }
 
     [Header("Dependencies")]
-    [Header("InteractingObjects")]
     [SerializeField] private Transform _defaultRaycastStartPoint;
-    [Tooltip("Target object for penknife")]
-    [SerializeField] private Transform _targetObj;
 
     // This script is used for initialization.
     // Here are all the awake and start methods. 
@@ -21,10 +19,23 @@ public class EntryPoint : MonoBehaviour
         else Instance = this;
 
         //CORE BELOW
+        InitializeAll<ShelfInitializer>();
+        InitializeAll<PenKnivesInitializer>();
+        InitializeAll<BuildingWrenchInitializer>();
+
         InitializeAll<HomoObjectSwitcher>();
         InitializeAll<Inventory>();
         InitializeAll<DeliveryManager>();
         InitializeAll<UnpackingPlot>();
+        InitializeAll<BuildingManager>();
+
+        InitializeAll<Shelf>();
+        InitializeAll<PenKnife>();
+        InitializeAll<BuildingWrench>();
+
+        InitializeAll<BuildedObject>();
+
+        InitializeAll<DayCycleManager>();
 
         //UI BELOW
         InitializeAll<InventoryUI>();
@@ -42,6 +53,7 @@ public class EntryPoint : MonoBehaviour
         InitializeInteractingObjects();
     }
 
+    #region Special
     public void InitializeInteractingObjects()
     {
         string totalLog = string.Empty;
@@ -58,7 +70,7 @@ public class EntryPoint : MonoBehaviour
         {
             try
             {
-                obj.Initialize(_defaultRaycastStartPoint, _targetObj);
+                obj.Initialize(_defaultRaycastStartPoint);
                 success++;
                 totalLog += $"({success + fail}) Successfully initialized: {obj.name} | typeof {typeof(InteractingObject).Name}\n";
             }
@@ -73,6 +85,7 @@ public class EntryPoint : MonoBehaviour
         totalLog += $"Initialized {success} {typeof(InteractingObject).Name}(s), failed {fail}";
         Debug.Log("[TOTAL INIT LOG]\n" + totalLog);
     }
+    #endregion
 
     #region Abstract
     private void InitializeAll<T>() where T : Component, IInitializable

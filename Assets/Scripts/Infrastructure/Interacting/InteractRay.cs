@@ -42,11 +42,20 @@ public class InteractRay : MonoBehaviour
 
             if (_target.GetActiveState() & _target.GetActingDistance() >= _rayHit.distance)
             {
-                _hintText.text = $"ֽאזלטעו: {_target.GetTriggerKey()}";
+                bool usingSideEvents = _target.GetStateUsingSideEvents();
+                //think about stopping using hints. better add a global HUD
 
-                if (Input.GetKeyDown(_target.GetTriggerKey()))
+                _hintText.text = $"ֽאזלטעו: {_target.GetMainTriggerKey()}";
+                if (usingSideEvents) _hintText.text += $" ({_target.GetSideTriggerKey()})";
+
+                if (Input.GetKeyDown(_target.GetMainTriggerKey()))
                 {
-                    _target.InvokeActions();
+                    _target.InvokeMainActions();
+                }
+                
+                if(usingSideEvents && Input.GetKeyDown(_target.GetSideTriggerKey()))
+                {
+                    _target.InvokeSideActions();
                 }
             }
             else

@@ -28,6 +28,8 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
 
     private void HandleDeliveryRequest(DeliveryRequestingEvent eventData)
     {
+        ResetData();
+
         if (eventData.Amount == 0 || eventData.ProductData == null)
         {
             Debug.LogError("Not enough data | DeliveryManager");
@@ -49,7 +51,7 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
         {
             SpawnObject(eventData.ProductData, 1);
             InitializeObjectData(0);
-            InitializePackedObject(0, eventData.ProductData.Icon);
+            InitializePackedObjectLayout(0, eventData.ProductData.Icon);
         }
     }
 
@@ -64,7 +66,7 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
 
     private void InitializeObjectData(int id) => _generatedObjects[id].GetComponent<ItemObject>().Initialize();
 
-    private void InitializePackedObject(int id, Sprite sprite)
+    private void InitializePackedObjectLayout(int id, Sprite sprite)
     {
         PackedBoxLayout obj = _generatedObjects[id].GetComponent<PackedBoxLayout>();
         obj.Initialize(sprite);
@@ -73,17 +75,17 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
     private void ResetData()
     {
         _generatedObjects.Clear();
+        _generatedObjects = null;
+        _generatedObjects = new();
     }
 
     private IEnumerator SpawningObjects(DeliveryRequestingEvent eventData)
     {
-        _generatedObjects.Clear();
-
         for (int i = 0; i < eventData.Amount; i++)
         {
             SpawnObject(eventData.ProductData, i + 1);
             InitializeObjectData(i);
-            InitializePackedObject(i, eventData.ProductData.Icon);
+            InitializePackedObjectLayout(i, eventData.ProductData.Icon);
 
             yield return new WaitForSeconds(1f);
         }

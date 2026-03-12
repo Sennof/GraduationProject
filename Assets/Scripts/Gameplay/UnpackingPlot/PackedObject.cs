@@ -19,14 +19,25 @@ public class PackedObject : MonoBehaviour
         //making an object
         _unpackedObject = Instantiate(_unpackedObjectPrefab, transform.position, Quaternion.identity, targetFolder);
         _unpackedObject.GetComponent<ItemObject>().Initialize();
+        InitializeInteractingObject();
         InitializeScripts();
 
         Destroy(gameObject);
     }
 
-    private void InitializeScripts()
+    private void InitializeInteractingObject()
     {
        if(_unpackedObject.GetComponent<InteractingObject>()) 
             EntryPoint.Instance.InitializeInteractingObjects();
+    }
+
+    private void InitializeScripts()
+    {
+        IInitializeable[] initScripts = _unpackedObject.GetComponents<IInitializeable>();
+        foreach (var script in initScripts)
+        {
+            if ((Object)script != this)
+                script.Initialize();
+        }
     }
 }

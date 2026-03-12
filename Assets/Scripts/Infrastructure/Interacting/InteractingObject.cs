@@ -4,22 +4,59 @@ using UnityEngine.Events;
 
 public class InteractingObject : MonoBehaviour
 {
-    //parameter to control time of work;
+    #region State Settings
+    [Header("State Settings")]
+    [Tooltip("Global toggle to control the system's operation time")]
     [SerializeField] private bool _enabled = true;
+
+    [Tooltip("Flag to determine if the object is currently held in hands")]
     [SerializeField] private bool _inHands = false;
+    #endregion
 
+    [Space(10)]
+
+    #region Detection Settings
+    [Header("Detection & Raycasting")]
+    [Tooltip("Determine if this logic requires a raycast check")]
     [SerializeField] private bool _needRaycast = true;
+
+    [Tooltip("The origin point from which the ray is cast (e.g., Camera or Eyes)")]
     [SerializeField] private Transform _raycastStartPoint;
+    #endregion
 
+    [Space(10)]
+
+    #region Interaction & Events
+    [Header("Interaction & Results")]
+    [Tooltip("List of actions triggered upon activation")]
     [SerializeField] private UnityEvent _actions;
+
+    [Tooltip("Target folder where generated or moved objects will be placed")]
     [SerializeField] private Transform _targetObjectFolder;
+    private GameObject _hittedObject = null;
+    #endregion
 
+    [Space(10)]
+
+    #region Input Configuration
+    [Header("Input Configuration")]
+    [Tooltip("The key used to trigger the interaction")]
     [SerializeField] private KeyCode _triggerKey = KeyCode.F;
+    [Tooltip("")]
+    [SerializeField] private bool _needDistance = false;
+    [Tooltip("")]
+    [SerializeField] private float _actDistance = 0;
 
-    public void Initialize(Transform raycastStartPoint, Transform targetObj)
+    #endregion
+
+    public void Initialize(Transform raycastStartPoint)
     {
         _raycastStartPoint = raycastStartPoint;
-        _targetObjectFolder = targetObj;
+    }
+
+    public void SetTargetObjectFolder(Transform TargetObjectFolder)
+    {
+        _targetObjectFolder = TargetObjectFolder;
     }
 
     private void Update()
@@ -34,28 +71,40 @@ public class InteractingObject : MonoBehaviour
                 return;
             }
 
-            Transform targetObj = null;
-            try
+            Transform hitObj = ThrowRay();
+            if (hitObj == null) 
             {
-                targetObj = _targetObjectFolder.GetChild(0);
-            }
-            catch
-            {
-                Debug.Log($"There is no object in the plot | InteractingObject: {gameObject.name}");
+                _hittedObject = null;    
                 return;
             }
+            _hittedObject = hitObj.gameObject;
 
-            if (ThrowRay() == targetObj) // getting child of the container object
+            if (_targetObjectFolder.childCount == 0) return;
+
+            foreach (Transform child in _targetObjectFolder)
             {
-                _actions.Invoke();
-                return;
+                if (hitObj == child)
+                {
+                    _actions.Invoke();
+                    return;
+                }
             }
         }
     }
 
-    public Transform GetTargetObject() => _targetObjectFolder;
+    public Transform GetTargetObjectFolder() => _targetObjectFolder;
 
-    public float GetDistanceToTarget() => Vector3.Distance(transform.position, _targetObjectFolder.position);
+    public GameObject GetTargetObject() => _hittedObject;
+
+    public float GetDistanceToTarget() => Vector3.Distance(transform.position, _hittedObject.transform.position);
+
+    public float GetActDistance()
+    {
+        if (_needDistance)
+            return _actDistance;
+        else
+            return 1000f;
+    }
 
     public void SetInHands() => _inHands = true;
 

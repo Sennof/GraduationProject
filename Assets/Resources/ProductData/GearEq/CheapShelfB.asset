@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 205ae9b08bde62e41ac80a20e5b666d7, type: 3}
+  m_Name: CheapShelfB
+  m_EditorClassIdentifier: 
+  TitleName: "\u0414\u0435\u0448\u0435\u0432\u044B\u0439 \u0428\u043A\u0430\u0444
+    3"
+  Description: "\u041E\u0431\u044B\u0447\u043D\u044B\u0439 \u0434\u0435\u0448\u0435\u0432\u044B\u0439
+    \u0448\u043A\u0430\u0444 \u0411\u041E\u041B\u042C\u0428\u041E\u0413\u041E \u0440\u0430\u0437\u043C\u0435\u0440\u0430
+    \u0434\u043B\u044F \u0445\u0440\u0430\u043D\u0435\u043D\u0438\u044F \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u043E\u0432"
+  Icon: {fileID: 21300000, guid: ae6fb74fb7235a04aa081f4bef2af52d, type: 3}
+  Prefab: {fileID: 6789532679481945408, guid: 37e9ffffac55ae14db34a8065dc34766, type: 3}
+  ObjectName: CheapShelfB
+  Size: 3
+  Price: 800

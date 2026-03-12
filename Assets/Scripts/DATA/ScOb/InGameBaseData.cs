@@ -8,4 +8,6 @@ public class InGameBaseData : UIBaseData
     public GameObject Prefab;
     [Tooltip("The name of spawned object")]
     public string ObjectName;
+    [Tooltip("The size of an object")]
+    public ObjectSizeEnum Size;
 }

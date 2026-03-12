@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: cf9645f4b26188844a02b620d0f7d28e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 211155
+  packageName: Furniture Generator Tool
+  packageVersion: 1.0
+  assetPath: Assets/MARCIN'S Assets/Furniture Generator Tool/Scripts/FMeshBuilder.cs
+  uploadId: 477961
