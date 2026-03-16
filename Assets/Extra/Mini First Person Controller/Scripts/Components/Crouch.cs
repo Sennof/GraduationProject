@@ -25,6 +25,7 @@ public class Crouch : MonoBehaviour
     public bool IsCrouched { get; private set; }
     public event System.Action CrouchStart, CrouchEnd;
 
+    private bool _enabled = true;
 
     void Reset()
     {
@@ -36,6 +37,7 @@ public class Crouch : MonoBehaviour
 
     void LateUpdate()
     {
+        if (!_enabled) return;
         if (Input.GetKey(key))
         {
             // Enforce a low head.
@@ -140,4 +142,8 @@ public class Crouch : MonoBehaviour
 
     float SpeedOverride() => movementSpeed;
     #endregion
+
+    public void Enable() => _enabled = true;
+
+    public void Disable() => _enabled = false;
 }

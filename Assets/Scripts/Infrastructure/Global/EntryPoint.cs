@@ -19,6 +19,9 @@ public class EntryPoint : MonoBehaviour
         else Instance = this;
 
         //CORE BELOW
+        InitializeAll<GlobalStatsBridge>();
+        _moneyBalance.Initialize(1000 /*saving blyat*/);
+
         InitializeAll<ShelfInitializer>();
         InitializeAll<PenKnivesInitializer>();
         InitializeAll<BuildingWrenchInitializer>();
@@ -40,9 +43,8 @@ public class EntryPoint : MonoBehaviour
         InitializeAll<BuildingWrench>();
         InitializeAll<BuildedObject>();
 
-        InitializeAll<GlobalStatsBridge>();
-
         //UI BELOW
+        InitializeAll<UIPricing>();
         InitializeAll<InventoryUI>();
         InitializeAll<ShopUIFactory>();
         InitializeAll<UIShopSideMenu>();
@@ -55,7 +57,13 @@ public class EntryPoint : MonoBehaviour
     private void Start() // LATE INITIALIZATION
     {
         InitializeAll<DayCycleManager>();
+        InitializeAll<ShopStateTablet>();
 
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();   
     }
 
     #region Special

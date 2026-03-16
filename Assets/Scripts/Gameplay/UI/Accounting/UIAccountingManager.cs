@@ -89,7 +89,7 @@ public class UIAccountingManager : MonoBehaviour
         string paymentTitle = "";
         for(int i = 0; i < parsedData.Count() - 1; i++)
         {
-            paymentTitle += parsedData[i];
+            paymentTitle += parsedData[i] + " ";
         }
 
         GameObject card = Instantiate(_prefab, folder);

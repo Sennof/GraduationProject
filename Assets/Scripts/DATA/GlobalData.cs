@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 
 [Serializable]
-public class GlobalStatistic
+public class GlobalData
 {
-    #region Money
+    public bool isShopOpened = false;
+
     public int Money = 0;
     public int TotalEarned = 0;
     public int TotalSpent = 0;
@@ -20,5 +21,4 @@ public class GlobalStatistic
         SummaryDailyEarn.Clear();
         SummaryDailyExpenses.Clear();
     }
-    #endregion
 }

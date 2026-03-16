@@ -5,17 +5,17 @@ public class GlobalStatsBridge : MonoBehaviour, IInitializeable
 {
     public static GlobalStatsBridge Instance { get; private set; }
 
-    private GlobalStatistic _data;
+    private GlobalData _data;
 
     public void Initialize()
     {
         if (Instance != null && Instance != this) Destroy(this);
         else Instance = this;
 
-        _data = new GlobalStatistic();
+        _data = new GlobalData();
     }
 
-    public void SetData(GlobalStatistic data)
+    public void SetData(GlobalData data)
     {
         if (data == null) return;
         _data = data;
@@ -41,11 +41,16 @@ public class GlobalStatsBridge : MonoBehaviour, IInitializeable
     public void AddSummaryDailyExpenses(string text) => _data.SummaryDailyExpenses.Add(text);
     #endregion
 
+    public void SetShopOpenClosed(bool state) => _data.isShopOpened = state;
+
+
     #region GETTING
     public float GetPricingMod() => _data.PricingMod;
 
     public List<string> GetSummaryDailyEarn() => _data.SummaryDailyEarn;
 
     public List<string> GetSummaryDailyExpenses() => _data.SummaryDailyExpenses;
+
+    public bool GetShopOpenClosed() => _data.isShopOpened;
     #endregion
 }

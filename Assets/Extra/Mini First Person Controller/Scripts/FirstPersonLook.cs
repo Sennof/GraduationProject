@@ -12,6 +12,8 @@ public class FirstPersonLook : MonoBehaviour
     Vector2 velocity;
     Vector2 frameVelocity;
 
+    Vector3 lastRotation = Vector3.zero;
+
     void Reset()
     {
         // Get the character from the FirstPersonMovement in parents.
@@ -39,9 +41,17 @@ public class FirstPersonLook : MonoBehaviour
             transform.localRotation = Quaternion.AngleAxis(-velocity.y, Vector3.right);
             character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
         }
+        else
+        {
+            transform.eulerAngles = lastRotation;
+        }
     }
 
     public void Enable() => _enabled = true;
 
-    public void Disable() => _enabled = false;
+    public void Disable()
+    {
+        _enabled = false;
+        lastRotation = transform.eulerAngles;
+    }
 }

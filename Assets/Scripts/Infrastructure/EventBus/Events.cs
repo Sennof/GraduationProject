@@ -111,4 +111,9 @@ public struct ItemPickUpEvent : IEvent
     public ItemObject ItemObjectData;
     public GameObject ItemGameObject;
 }
+
+public struct OnShopStateChanging : IEvent
+{
+    public bool isOpen;
+}
 #endregion

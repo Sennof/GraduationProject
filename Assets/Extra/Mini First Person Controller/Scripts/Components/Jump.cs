@@ -2,6 +2,7 @@
 
 public class Jump : MonoBehaviour
 {
+    private bool _enabled = true;
     Rigidbody rigidbody;
     public float jumpStrength = 2;
     public event System.Action Jumped;
@@ -24,6 +25,7 @@ public class Jump : MonoBehaviour
 
     void LateUpdate()
     {
+        if (!_enabled) return;
         // Jump when the Jump button is pressed and we are on the ground.
         if (Input.GetButtonDown("Jump") && (!groundCheck || groundCheck.isGrounded))
         {
@@ -31,4 +33,8 @@ public class Jump : MonoBehaviour
             Jumped?.Invoke();
         }
     }
+
+    public void SetEnabled() => _enabled = true;
+
+    public void SetDisabled() => _enabled = false;
 }

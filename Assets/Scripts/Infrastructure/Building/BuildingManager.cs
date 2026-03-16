@@ -38,7 +38,7 @@ public class BuildingManager : MonoBehaviour, IInitializeable
     private EventBinding<RemoveBuildingEvent> _removeBuildingBinding;
 
     private Vector3 _lastCalculatedPosition;
-    private bool _isFirstPlacementAttempt = true; // Флаг для первого запуска
+    private bool _isFirstPlacementAttempt = true;
     #endregion
 
     #region Core
@@ -65,14 +65,14 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
     private void Update()
     {
+        if (GlobalStatsBridge.Instance.GetShopOpenClosed()) return;
         if (!_canBuilding) return;
 
         if (Input.GetKeyDown(_buildingModeKeyCode))
             BuildingProcessTrigger();
 
-        if (!_isBuilding) return;
-
-        HandleBuildingInput();
+        if (_isBuilding)
+            HandleBuildingInput();
     }
 
     //part of initialization

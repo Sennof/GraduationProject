@@ -34,7 +34,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         _paymentOperationBinding = new EventBinding<UIPaymentCardOperation>(HandlePaymentOperation);
         EventBus<UIPaymentCardOperation>.Register(_paymentOperationBinding);
 
-        _interactableStateSwitcher.enabled = false;
+        _interactableStateSwitcher.SetActiveState(false);
         _ui.Initialize(_buyableProductDatas.ToArray());
     }
     #endregion
@@ -60,6 +60,13 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private void HandlePaymentOperation(UIPaymentCardOperation eventData)
     {
+        if (eventData.isPlus == false && eventData.Price == 1234)
+        {
+            _ui.SetPriceText(0);
+            _currentTotalPrice = 0;
+            return;
+        }
+
         int price = (int)(eventData.Price * GlobalStatsBridge.Instance.GetPricingMod());
         _currentTotalPrice += eventData.isPlus ? price : -price;
         _ui.SetPriceText(_currentTotalPrice);

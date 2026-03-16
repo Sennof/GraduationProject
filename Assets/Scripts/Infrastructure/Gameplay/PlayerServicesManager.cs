@@ -3,12 +3,30 @@ using UnityEngine;
 public class PlayerServicesManager : MonoBehaviour
 {
     [Header("Player Components")]
+    [SerializeField] private FirstPersonMovement FirstPersonMovement;
+    [SerializeField] private FirstPersonAudio FirstPersonAudio;
     [SerializeField] private FirstPersonLook FirstPersonLook;
+    [SerializeField] private Crouch Crouch;
+    [SerializeField] private Jump Jump;
     [SerializeField] private Zoom Zoom;
 
-    [SerializeField] private FirstPersonMovement FirstPersonMovement;
+    public void SetOffTotal()
+    {
+        TurnOffLooking();
+        TurnOffMovements();
+        TurnOffAudio();
+        TurnOffJumping();
+        TurnOffCrouching();
+    }
 
-    [SerializeField] private FirstPersonAudio FirstPersonAudio;
+    public void SetOnTotal()
+    {
+        TurnOnLooking();
+        TurnOnMovements();
+        TurnOnAudio();
+        TurnOnJumping();
+        TurnOnCrouching();
+    }
 
     public void TurnOffLooking()
     {
@@ -33,4 +51,12 @@ public class PlayerServicesManager : MonoBehaviour
     public void TurnOffAudio() => FirstPersonAudio.Disable();
 
     public void TurnOnAudio() => FirstPersonAudio.Enable();
+
+    public void TurnOffJumping() => Jump.SetDisabled();
+
+    public void TurnOnJumping() => Jump.SetEnabled();
+
+    public void TurnOffCrouching() => Crouch.Disable();
+
+    public void TurnOnCrouching() => Crouch.Enable();
 }

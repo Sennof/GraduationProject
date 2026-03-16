@@ -82,10 +82,14 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     {
         while (true)
         {
-            if (_enabled && _activeAgents.Count < _maxAgents && _navPoints.Count > 0)
+            if (GlobalStatsBridge.Instance.GetShopOpenClosed())
             {
-                SpawnAgent();
+                if (_enabled && _activeAgents.Count < _maxAgents && _navPoints.Count > 0)
+                {
+                    SpawnAgent();
+                }
             }
+
             yield return new WaitForSeconds(Random.Range(_visitCooldownMin, _visitCooldownMax));
         }
     }
@@ -197,6 +201,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
             finisher.ReleaseFromQueue(_spawnpoint);
             AdvanceQueue();
+            StartCoroutine(CooldownedKillingRoutine(finisher, 7));
         }
     }
 
@@ -207,6 +212,13 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         else
             _navPoints.Remove(data.GlobalPosition);
     }
+
+    private IEnumerator CooldownedKillingRoutine(AICustomer agent, float cooldown)
+    {
+        yield return new WaitForSeconds(cooldown);
+        KillAgent(agent.gameObject);
+    }
+
     #endregion
 }
 #endregion
