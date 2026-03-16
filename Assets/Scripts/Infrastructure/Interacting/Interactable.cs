@@ -40,4 +40,6 @@ public class Interactable : MonoBehaviour
     public float GetActingDistance() => _actDistance;
     
     public bool GetActiveState() => _enabled;
+
+    public void SetActiveState(bool state) => _enabled = state;
 }

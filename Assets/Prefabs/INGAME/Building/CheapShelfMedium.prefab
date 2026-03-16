@@ -428,8 +428,9 @@ GameObject:
   m_Component:
   - component: {fileID: 9209723465305820322}
   - component: {fileID: 3547978815008308981}
-  - component: {fileID: 5218460557069939552}
   - component: {fileID: 2582247561711964782}
+  - component: {fileID: 5218460557069939552}
+  - component: {fileID: 6221972666391749950}
   m_Layer: 9
   m_Name: CheapShelfMedium
   m_TagString: Untagged
@@ -450,6 +451,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2757267473867013610}
   - {fileID: 4993881922504167046}
   - {fileID: 5618808908954978856}
   - {fileID: 5296139099610291612}
@@ -475,6 +477,25 @@ MonoBehaviour:
   - {fileID: 4321363432840916307}
   - {fileID: 1026338003207915328}
   _objectSize: 1
+  _navPoint: {fileID: 2757267473867013610}
+--- !u!114 &2582247561711964782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5982465843883238190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acbcb58d01f69fe41b6c9dad061ffba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _buildedObjectBarrier: {fileID: 2645424717203368603}
+  _buildedObjectBarrierRenderer: {fileID: 5614433988408010724}
+  _buildedObjectBarrierCollider: {fileID: 2869023748860235470}
+  _obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!65 &5218460557069939552
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -496,24 +517,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.90558606, y: 1.8277686, z: 1.9952314}
   m_Center: {x: 0.0010978281, y: 0.90351903, z: 0.0041124523}
---- !u!114 &2582247561711964782
-MonoBehaviour:
+--- !u!208 &6221972666391749950
+NavMeshObstacle:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5982465843883238190}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: acbcb58d01f69fe41b6c9dad061ffba8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _buildedObjectBarrier: {fileID: 2645424717203368603}
-  _buildedObjectBarrierRenderer: {fileID: 5614433988408010724}
-  _buildedObjectBarrierCollider: {fileID: 2869023748860235470}
-  _obstacleMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.45279306, y: 0.9138845, z: 0.9976155}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.001097828, y: 0.903519, z: 0.004112452}
+  m_TimeToStationary: 0.5
 --- !u!1 &6334201548817682666
 GameObject:
   m_ObjectHideFlags: 0
@@ -974,6 +993,37 @@ MonoBehaviour:
   _cellSize: {x: 0.5, y: 0.5}
   _spacing: {x: 0.05, y: 0}
   _centerGrid: 1
+--- !u!1 &7444540097790780347
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2757267473867013610}
+  m_Layer: 9
+  m_Name: NavPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2757267473867013610
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7444540097790780347}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.15, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9209723465305820322}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7449467422406279858
 GameObject:
   m_ObjectHideFlags: 0

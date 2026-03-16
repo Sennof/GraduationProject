@@ -31,22 +31,24 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     public void AddMoney(int amount, string description)
     {
         _moneyAmount += amount;
-        GlobalStatistic.TotalEarned += amount;
-        GlobalStatistic.SummaryDailyEarn.Add(description + " " + amount);
+        GlobalStatsBridge.Instance.AddTotalEarned(amount);
+        GlobalStatsBridge.Instance.AddSummaryDailyEarn(description + " " + amount);
+
         _ui.SetMoneyUI(_moneyAmount);
     }
 
     public void RemoveMoney(int amount, string description)
     {
         _moneyAmount -= amount;
-        GlobalStatistic.TotalEarned += amount;
-        GlobalStatistic.SummaryDailyExpenses.Add(description + " " + amount);
+        GlobalStatsBridge.Instance.AddTotalSpent(amount);
+        GlobalStatsBridge.Instance.AddSummaryDailyExpenses(description + " " + amount);
         _ui.SetMoneyUI(_moneyAmount);
     }
 
     public void SetMoney(int value)
     {
         _moneyAmount = value;
+        GlobalStatsBridge.Instance.SetMoney(value);
         _ui.SetMoneyUI(_moneyAmount);
     }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -9,6 +8,7 @@ public class EntryPoint : MonoBehaviour
 
     [Header("Dependencies")]
     [SerializeField] private Transform _defaultRaycastStartPoint;
+    [SerializeField] private MoneyBalance _moneyBalance;
 
     // This script is used for initialization.
     // Here are all the awake and start methods. 
@@ -28,14 +28,19 @@ public class EntryPoint : MonoBehaviour
         InitializeAll<DeliveryManager>();
         InitializeAll<UnpackingPlot>();
         InitializeAll<BuildingManager>();
+        InitializeAll<ProductGenerator>();
+        InitializeAll<AIAgentsManager>();
 
+        InitializeAll<BuyingManager>();
+
+        InitializeAll<ItemObject>();
+        InitializeInteractingObjects();
         InitializeAll<Shelf>();
         InitializeAll<PenKnife>();
         InitializeAll<BuildingWrench>();
-
         InitializeAll<BuildedObject>();
 
-        InitializeAll<DayCycleManager>();
+        InitializeAll<GlobalStatsBridge>();
 
         //UI BELOW
         InitializeAll<InventoryUI>();
@@ -49,8 +54,8 @@ public class EntryPoint : MonoBehaviour
 
     private void Start() // LATE INITIALIZATION
     {
-        InitializeAll<ItemObject>();
-        InitializeInteractingObjects();
+        InitializeAll<DayCycleManager>();
+
     }
 
     #region Special

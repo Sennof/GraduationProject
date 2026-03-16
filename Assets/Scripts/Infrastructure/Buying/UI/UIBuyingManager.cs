@@ -1,0 +1,30 @@
+using TMPro;
+using UnityEngine;
+
+public class UIBuyingManager : MonoBehaviour
+{
+    #region Fields
+    [Header("UI References")]
+    [SerializeField] private Transform _uiCardsFolder;
+    [SerializeField] private GameObject _uiCardPrefab;
+    [SerializeField] private TMP_Text _priceSumText;
+    #endregion
+
+    #region Public Methods
+    public void Initialize(ProductData[] products)
+    {
+        foreach (Transform child in _uiCardsFolder) Destroy(child.gameObject);
+
+        foreach (ProductData data in products)
+        {
+            GameObject card = Instantiate(_uiCardPrefab, _uiCardsFolder);
+            if (card.TryGetComponent(out UIBuyingCard uiCard))
+            {
+                uiCard.Initialize(data, this);
+            }
+        }
+    }
+
+    public void SetPriceText(int price) => _priceSumText.text = $"Стоимость: {price}.";
+    #endregion
+}

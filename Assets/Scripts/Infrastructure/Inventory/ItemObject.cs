@@ -5,6 +5,7 @@ public class ItemObject : MonoBehaviour, IInitializable
 {
     #region Data Settings
     [Header("Main Metadata")]
+    [SerializeField] private ProductData _productData;
     [SerializeField] private InteractableObjectTypeEnum _type;
     [SerializeField] private ObjectSizeEnum _size;
     [SerializeField] private Sprite _icon;
@@ -112,6 +113,8 @@ public class ItemObject : MonoBehaviour, IInitializable
             _buildingObject.SetOutHands();
         }
     }
+
+    public ProductData GetProductData() => _productData;
 
     public Sprite GetIcon() => _icon;
 

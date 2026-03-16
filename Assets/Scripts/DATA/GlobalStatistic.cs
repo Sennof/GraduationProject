@@ -1,14 +1,24 @@
 
+using System;
 using System.Collections.Generic;
 
-public static class GlobalStatistic
+[Serializable]
+public class GlobalStatistic
 {
     #region Money
-    public static int Money = 0;
-    public static int TotalEarned = 0;
-    public static int TotalSpent = 0;
+    public int Money = 0;
+    public int TotalEarned = 0;
+    public int TotalSpent = 0;
 
-    public static List<string> SummaryDailyEarn = new();
-    public static List<string> SummaryDailyExpenses = new();
+    public float PricingMod = 1.2f;
+
+    public List<string> SummaryDailyEarn = new();
+    public List<string> SummaryDailyExpenses = new();
+
+    public void ResetDayMoneyStats()
+    {
+        SummaryDailyEarn.Clear();
+        SummaryDailyExpenses.Clear();
+    }
     #endregion
 }

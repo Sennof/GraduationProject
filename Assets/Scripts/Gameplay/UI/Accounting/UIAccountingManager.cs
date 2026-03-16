@@ -51,9 +51,9 @@ public class UIAccountingManager : MonoBehaviour
 
     private void SetIncomeUI()
     {
-        if (_generatedIncomeStrings == GlobalStatistic.SummaryDailyEarn)
+        if (_generatedIncomeStrings == GlobalStatsBridge.Instance.GetSummaryDailyEarn())
             return;
-        List<string> toMake = new List<string>(GlobalStatistic.SummaryDailyEarn);
+        List<string> toMake = new List<string>(GlobalStatsBridge.Instance.GetSummaryDailyEarn());
 
         foreach(string str in _generatedIncomeStrings)
         {
@@ -68,9 +68,9 @@ public class UIAccountingManager : MonoBehaviour
 
     private void SetOutcomeUI()
     {
-        if (_generatedOutcomeStrings == GlobalStatistic.SummaryDailyExpenses)
+        if (_generatedOutcomeStrings == GlobalStatsBridge.Instance.GetSummaryDailyExpenses())
             return;
-        List<string> toMake = new List<string>(GlobalStatistic.SummaryDailyExpenses);
+        List<string> toMake = new List<string>(GlobalStatsBridge.Instance.GetSummaryDailyExpenses());
 
         foreach (string str in _generatedOutcomeStrings)
         {

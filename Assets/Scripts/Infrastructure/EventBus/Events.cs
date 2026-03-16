@@ -70,6 +70,36 @@ public struct ShelfVisitPointTranslatingEvent : IEvent
 }
 #endregion
 
+#region DayCycle
+public struct OnDayStateChangeEvent : IEvent
+{
+    public bool isDay;
+}
+#endregion
+
+#region Buying & buyers
+public struct OnShelfInitializationEvent : IEvent
+{
+    public Vector3 GlobalPosition;
+    public bool Adding;
+
+    public Shelf Shelf;
+}
+
+public struct PaymentRequestEvent : IEvent
+{
+    public GameObject[] Products;
+}
+
+public struct UIPaymentCardOperation : IEvent
+{
+    public bool isPlus;
+    public int Price;
+}
+
+public struct PaymentResponseEvent : IEvent {}
+#endregion
+
 #region else
 public struct UnpackingEvent : IEvent
 {
