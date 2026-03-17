@@ -9,7 +9,6 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     [Header("Settings")]
     [SerializeField] private List<Shelf> _shelves = new();
     [SerializeField] private Transform _spawnFolder;
-    [SerializeField] private Vector3 _spawnpoint;
     [SerializeField, Range(0, 10)] private float _puttingCooldown = 0.5f;
 
     private List<GameObject> _generatedObjects = new();
@@ -82,7 +81,7 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
                 product.GetComponent<Interactable>().SetActiveState(false);
 
                 product.transform.SetParent(_spawnFolder);
-                product.transform.position = _spawnpoint;
+                product.transform.position = _spawnFolder.position;
 
                 product.SetActive(true);
 

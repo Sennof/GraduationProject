@@ -39,6 +39,14 @@ public class GlobalStatsBridge : MonoBehaviour, IInitializeable
     public void AddSummaryDailyEarn(string text) => _data.SummaryDailyEarn.Add(text);
 
     public void AddSummaryDailyExpenses(string text) => _data.SummaryDailyExpenses.Add(text);
+
+    public void AddRating(float value) => _data.Rating += value;
+
+    public void ReduceRating(float value)
+    {
+        _data.Rating -= value;
+        if(_data.Rating < 0) _data.Rating = 0;
+    }
     #endregion
 
     public void SetShopOpenClosed(bool state) => _data.isShopOpened = state;

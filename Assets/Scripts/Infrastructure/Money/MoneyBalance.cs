@@ -2,17 +2,17 @@ using UnityEngine;
 
 public class MoneyBalance : MonoBehaviour, IMoneyBalance
 {
+    [SerializeField] private SettingsConfigurationSO _settings;
     [SerializeField] private UIMoneyBalance _ui;
 
-    [SerializeField] private bool _cheatsEnabled = false;
-    [SerializeField] private KeyCode _cheatingKeyCode;
+    [SerializeField] private KeyCode _cheatingKeyCode = KeyCode.M;
     [SerializeField] private int _cheatingAmount = 10;
 
     private int _moneyAmount = 0;
 
     private void Update()
     {
-        if (!_cheatsEnabled)
+        if (!_settings.IsCheatsEnabled)
             return;
 
         if (Input.GetKeyDown(_cheatingKeyCode))
@@ -58,8 +58,4 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     }
 
     public int GetMoney() => _moneyAmount;
-
-    public bool GetCheatsEnabledState() => _cheatsEnabled;
-
-    public void ChangeCheatsState() => _cheatsEnabled = !_cheatsEnabled;
 }

@@ -10,9 +10,5 @@ public interface IMoneyBalance
 
     public int GetMoney();
 
-    public bool GetCheatsEnabledState();
-
-    public void ChangeCheatsState();
-
     public bool GetPriceAvailability(int price);
 }

@@ -16,6 +16,8 @@ public class GlobalData
     public List<string> SummaryDailyEarn = new();
     public List<string> SummaryDailyExpenses = new();
 
+    public float Rating = 0;
+
     public void ResetDayMoneyStats()
     {
         SummaryDailyEarn.Clear();
