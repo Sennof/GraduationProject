@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerServicesManager : MonoBehaviour
+public class PlayerServicesManager : MonoBehaviour, IInitializeable
 {
     [Header("Player Components")]
     [SerializeField] private FirstPersonMovement FirstPersonMovement;
@@ -9,6 +9,11 @@ public class PlayerServicesManager : MonoBehaviour
     [SerializeField] private Crouch Crouch;
     [SerializeField] private Jump Jump;
     [SerializeField] private Zoom Zoom;
+
+    public void Initialize()
+    {
+        SetOnTotal();
+    }
 
     public void SetOffTotal()
     {

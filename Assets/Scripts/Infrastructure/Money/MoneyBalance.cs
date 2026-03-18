@@ -23,7 +23,7 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
 
     public void Initialize(int moneyAmount)
     {
-        //SAVINGSYS
+        //SAVINGSYS (probaply just get from GameData)
         _moneyAmount = moneyAmount;
         _ui.SetMoneyUI(moneyAmount);
     }
@@ -31,7 +31,6 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     public void AddMoney(int amount, string description)
     {
         _moneyAmount += amount;
-        GlobalStatsBridge.Instance.AddTotalEarned(amount);
         GlobalStatsBridge.Instance.AddSummaryDailyEarn(description + " " + amount);
 
         _ui.SetMoneyUI(_moneyAmount);
@@ -40,7 +39,6 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     public void RemoveMoney(int amount, string description)
     {
         _moneyAmount -= amount;
-        GlobalStatsBridge.Instance.AddTotalSpent(amount);
         GlobalStatsBridge.Instance.AddSummaryDailyExpenses(description + " " + amount);
         _ui.SetMoneyUI(_moneyAmount);
     }

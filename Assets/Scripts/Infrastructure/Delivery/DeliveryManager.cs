@@ -36,8 +36,9 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
             return;
         }
         _moneyBalance.RemoveMoney(eventData.ProductData.Price * eventData.Amount, $"Доставка({eventData.Amount}шт.) {eventData.ProductData.TitleName} {eventData.ProductData.Price * eventData.Amount}");
+        GlobalStatsBridge.Instance.AddTotalDeliveries();
 
-        if(eventData.Amount > 1)
+        if (eventData.Amount > 1)
         {
             if(_spawningObjectsCor != null)
             {

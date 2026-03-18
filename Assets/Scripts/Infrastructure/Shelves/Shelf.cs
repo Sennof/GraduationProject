@@ -43,10 +43,14 @@ public class Shelf : MonoBehaviour, IInitializeable
 
     public GameObject PrepareProduct()
     {
-        foreach (ShelfSlot slot in _slots)
+        int counter = Random.Range(1, _slots.Count);
+
+        for(int i = 0; i < counter; i++)
         {
-            GameObject found = slot.TryGetItem();
-            if (found != null) return found;
+            int slotId = Random.Range(0, _slots.Count);
+            GameObject found = _slots[slotId].TryGetItem();
+
+            if(found != null) return found;
         }
         return null;
     }

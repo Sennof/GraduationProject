@@ -14,6 +14,12 @@ public class PenKnife : MonoBehaviour, IInitializeable
         EventBus<PenKnifeDataRequestingEvent>.Raise(new PenKnifeDataRequestingEvent { Target = gameObject});
     }
 
+    private void OnDisable()
+    {
+        EventBus<PenKnifeResponsingEvent>.Deregister(_binding);
+        _binding = null;
+    }
+
 
     public void InvokeUnpacking()
     {

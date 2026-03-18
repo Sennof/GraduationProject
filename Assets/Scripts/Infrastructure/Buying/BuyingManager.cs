@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -12,9 +11,10 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     [SerializeField] private ProductGenerator _productGenerator;
     [Inject] private IMoneyBalance _moneyBalance;
 
-
     [Header("Settings")]
     [SerializeField] private List<ProductData> _buyableProductDatas = new();
+
+    [Inject] private IRatingManager _ratingManager;
 
     [Header("Runtime State")]
     private List<ProductData> _productsData = new();
@@ -84,14 +84,20 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         if (difference == 0)
         {
             _moneyBalance.AddMoney(_currentTotalPrice, "Продажа товара");
+            _ratingManager.AddRating(0.1f);
+            _ratingManager.AddFeedback("Вск хорошо, мне понравилось.");
         }
         else if(difference < 0)
         {
             _moneyBalance.AddMoney(_currentTotalPrice, "Продажа товара(Ошибка чека)");
+            _ratingManager.AddRating(0.025f);
+            _ratingManager.AddFeedback("Кассир - красавчик, неправильно чек посчитал.");
         }
         else
         {
             _moneyBalance.RemoveMoney(_currentRealTotalPrice, "Продажа товара(Попытка воровства)");
+            _ratingManager.ReduceRating(0.12f);
+            _ratingManager.AddFeedback("Меня обокрали!");
         }
 
             EventBus<PaymentResponseEvent>.Raise(new PaymentResponseEvent { });

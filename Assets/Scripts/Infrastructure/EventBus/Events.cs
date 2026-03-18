@@ -116,4 +116,9 @@ public struct OnShopStateChanging : IEvent
 {
     public bool isOpen;
 }
+
+public struct OnRatingLevelChange : IEvent
+{
+    public LevelsEnum Level;
+}
 #endregion

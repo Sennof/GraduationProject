@@ -16,6 +16,12 @@ public class BuildingWrench : MonoBehaviour, IInitializeable
         EventBus<BuildingWrenchRequestingEvent>.Raise(new BuildingWrenchRequestingEvent { Target = gameObject});
     }
 
+    private void OnDisable()
+    {
+        EventBus<BuildingWrenchResponsingEvent>.Deregister(_binding);
+        _binding = null;
+    }
+
     public void GetData(BuildingWrenchResponsingEvent eventData)
     {
         if (eventData.Target != gameObject) return;

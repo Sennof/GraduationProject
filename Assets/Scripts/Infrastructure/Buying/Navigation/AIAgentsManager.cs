@@ -11,7 +11,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
     [Header("General Settings")]
     [SerializeField] private bool _enabled = true;
-    [SerializeField] private int _maxAgents = 6;
+    [SerializeField] private int _maxAgents = 2;
 
     [Header("Spawn Settings")]
     [SerializeField, Range(1, 100)] private int _visitCooldownMin = 2;
@@ -33,6 +33,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     private Coroutine _trafficCor = null;
     private EventBinding<OnShelfInitializationEvent> _shelfBinding = null;
     private EventBinding<PaymentResponseEvent> _paymentFinishedBinding = null;
+    private EventBinding<OnRatingLevelChange> _ratingLevelChangeBinding = null;
     #endregion
 
     #region Unity Methods
@@ -46,6 +47,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     {
         EventBus<OnShelfInitializationEvent>.Deregister(_shelfBinding);
         EventBus<PaymentResponseEvent>.Deregister(_paymentFinishedBinding);
+        EventBus<OnRatingLevelChange>.Deregister(_ratingLevelChangeBinding);
     }
     #endregion
 
@@ -60,6 +62,9 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
         _paymentFinishedBinding = new EventBinding<PaymentResponseEvent>(HandlePaymentFinished);
         EventBus<PaymentResponseEvent>.Register(_paymentFinishedBinding);
+
+        _ratingLevelChangeBinding = new EventBinding<OnRatingLevelChange>(HandleRatingChange);
+        EventBus<OnRatingLevelChange>.Register(_ratingLevelChangeBinding);
 
         if (_trafficCor != null)
             StopCoroutine(_trafficCor);
@@ -117,6 +122,12 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         }
 
         return way.ToArray();
+    }
+
+    private IEnumerator CooldownedKillingRoutine(AICustomer agent, float cooldown)
+    {
+        yield return new WaitForSeconds(cooldown);
+        KillAgent(agent.gameObject);
     }
     #endregion
 
@@ -213,10 +224,42 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             _navPoints.Remove(data.GlobalPosition);
     }
 
-    private IEnumerator CooldownedKillingRoutine(AICustomer agent, float cooldown)
+
+    private void HandleRatingChange(OnRatingLevelChange eventData)
     {
-        yield return new WaitForSeconds(cooldown);
-        KillAgent(agent.gameObject);
+        switch(eventData.Level)
+        {
+            case LevelsEnum.Level0:
+                _visitCooldownMin = 12;
+                _visitCooldownMax = 36;
+                _maxAgents = 1;
+                break;
+            case LevelsEnum.Level1:
+                _visitCooldownMin = 12;
+                _visitCooldownMax = 28;
+                _maxAgents = 2;
+                break;
+            case LevelsEnum.Level2:
+                _visitCooldownMin = 11;
+                _visitCooldownMax = 24;
+                _maxAgents = 3;
+                break;
+            case LevelsEnum.Level3:
+                _visitCooldownMin = 9;
+                _visitCooldownMax = 20;
+                _maxAgents = 3;
+                break;
+            case LevelsEnum.Level4:
+                _visitCooldownMin = 7;
+                _visitCooldownMax = 16;
+                _maxAgents = 4;
+                break;
+            case LevelsEnum.Level5:
+                _visitCooldownMin = 5;
+                _visitCooldownMax = 12;
+                _maxAgents = 5;
+                break;
+        }
     }
 
     #endregion

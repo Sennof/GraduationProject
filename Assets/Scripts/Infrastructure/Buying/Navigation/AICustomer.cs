@@ -53,6 +53,7 @@ public class AICustomer : MonoBehaviour
             StopCoroutine(_logicCor);
 
         _logicCor = StartCoroutine(FollowDestinationsRoutine());
+        GlobalStatsBridge.Instance.AddTotalVisitors();
     }
 
     public void MoveToQueuePoint(Vector3 newPoint)

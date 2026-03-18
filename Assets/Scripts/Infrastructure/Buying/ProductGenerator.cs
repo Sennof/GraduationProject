@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class ProductGenerator : MonoBehaviour, IInitializeable
 {
@@ -10,6 +11,8 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     [SerializeField] private List<Shelf> _shelves = new();
     [SerializeField] private Transform _spawnFolder;
     [SerializeField, Range(0, 10)] private float _puttingCooldown = 0.5f;
+
+    [Inject] private IRatingManager _ratingManager;
 
     private List<GameObject> _generatedObjects = new();
     private Coroutine _spawningProductsCor = null;
@@ -46,12 +49,31 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
 
     public GameObject[] GenerateProducts()
     {
+        int needProductsMin = Random.Range(1, _shelves.Count);
         List<GameObject> items = new();
         foreach (Shelf shelf in _shelves)
         {
             GameObject item = shelf.PrepareProduct();
             if (item != null) items.Add(item);
         }
+
+        if (items.Count < needProductsMin)
+        {
+            _ratingManager.ReduceRating(0.05f);
+            _ratingManager.AddFeedback("Маленький ассортимент...");
+        }
+        else if (items.Count == needProductsMin)
+        {
+            _ratingManager.AddRating(0.025f);
+            _ratingManager.AddFeedback("Нашел то, что нужно!");
+        }
+        else
+        {
+            _ratingManager.AddRating(0.05f);
+            _ratingManager.AddFeedback("У вас столько всего!");
+        }
+        GlobalStatsBridge.Instance.AddTotalProducts(items.Count);
+
         return items.ToArray();
     }
 

@@ -14,11 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TitleName: "\u0413\u0435\u043D\u0430\u0434\u0438\u0439 \u0410\u043D\u0442\u043E\u043D\u043E\u0432\u0438\u0447"
   Description: 
-  Icon: {fileID: 21300000, guid: 7c791b06d60186a49b98056b1d59b321, type: 3}
+  Icon: {fileID: 21300000, guid: e4ff502f1dcdd644ea95611724b38ddf, type: 3}
   Prefab: {fileID: 0}
   ObjectName: NONE
+  Size: 0
   Gender: 0
   Age: 52
   MovementSpeed: 0.8
   Type: 0
-  Salary: 2100
+  DaySalary: 0
+  InstantPay: 0

@@ -21,10 +21,14 @@ public class EntryPoint : BaseEntryPoint
         //CORE BELOW
         InitializeAll<GlobalStatsBridge>();
         _moneyBalance.Initialize(1000 /*saving blyat*/);
+        InitializeAll<RatingManager>();
 
         InitializeAll<ShelfInitializer>();
         InitializeAll<PenKnivesInitializer>();
         InitializeAll<BuildingWrenchInitializer>();
+
+        InitializeAll<PlayerServicesManager>();
+        InitializeAll<UIChecking>();
 
         InitializeAll<HomoObjectSwitcher>();
         InitializeAll<Inventory>();
