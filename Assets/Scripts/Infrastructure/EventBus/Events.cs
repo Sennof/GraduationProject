@@ -14,6 +14,12 @@ public struct DeliveryRequestingEvent : IEvent
     public int Amount;
     public ProductData ProductData;
 }
+
+public struct DeliveryResponseEvent : IEvent 
+{
+    public bool isSuccess;
+}
+
 #endregion
 
 #region building

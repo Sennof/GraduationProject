@@ -1,0 +1,65 @@
+using AYellowpaper.SerializedCollections;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq; 
+using UnityEngine;
+
+public class UIAnimsManager : MonoBehaviour
+{
+    [SerializeField] private HomoObjectSwitcher _objectSwitcher;
+    [SerializedDictionary("Animator", "Animation Clip")]
+    [SerializeField] private SerializedDictionary<Animator, AnimationClip> _animations;
+
+    private Coroutine[] _cooldownRoutines = new Coroutine[10];
+
+    public void PlayAnimation(int index)
+    {
+        if (_animations == null || _animations.Count == 0)
+        {
+            Debug.LogWarning("UIAnimsManager: No one animation was found");
+            return;
+        }
+
+        if (index < 0 || index >= _animations.Count)
+        {
+            Debug.LogWarning($"UIAnimsManager: Index {index} is out of range (0..{_animations.Count - 1}).");
+            return;
+        }
+
+        var pair = _animations.ElementAt(index);
+        Animator animator = pair.Key;
+        AnimationClip animation = pair.Value;
+        _objectSwitcher.OffAll();
+        _objectSwitcher.SetOn(index);
+
+        if (animator != null && animation != null)
+        {
+            AddToArr(StartCoroutine(AnimCooldownRoutine(animation.length, index)));
+            animator.Play(animation.name);
+        }
+        else
+        {
+            Debug.LogWarning($"UIAnimsManager: Failed to play animation by index({index}) " +
+                             $"\nAnimator: {(animator == null ? "null" : "OK")}, AnimationName: {(string.IsNullOrEmpty(animation.name) ? "null or empty" : animation.name)}");
+        }
+    }
+
+    private void AddToArr(Coroutine routine)
+    {
+        for (int i = 0; i < _cooldownRoutines.Length; i++)
+        {
+            if (_cooldownRoutines[i] == null)
+            {
+                _cooldownRoutines[i] = routine;
+                break;
+            }
+        }
+    }
+
+    private IEnumerator AnimCooldownRoutine(float animDuration, int arrId)
+    {
+        yield return new WaitForSeconds(animDuration);
+        _objectSwitcher.OffAll();
+        _cooldownRoutines[arrId] = null;
+    }
+}

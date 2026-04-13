@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "SettingsConfiguration", menuName = "Configuration/Settings")]
@@ -5,11 +6,15 @@ public class SettingsConfigurationSO : ScriptableObject
 {
     #region Graphics Fields
     [Header("Graphics")]
-    [SerializeField] private SreenResolutionEnum _screenResolution;
+    [SerializeField] private bool _fullscreenMode = true;
+    
+    [SerializeField] private SreenResolutionEnum _screenResolution = SreenResolutionEnum.Res_1920x1080; 
+    
     [SerializeField] private QualityEnum _shadowsQuality = QualityEnum.High;
     [SerializeField] private QualityEnum _texturesQuality = QualityEnum.High;
     [SerializeField] private QualityEnum _renderDistance = QualityEnum.High;
-    [SerializeField, Range(0, 1)] private float _brightness = 1;
+    
+    [Range(0, 1)] private float _brightness = 1;
     #endregion
 
     #region Audio Fields
@@ -48,6 +53,7 @@ public class SettingsConfigurationSO : ScriptableObject
     #endregion
 
     #region Properties (Getters)
+    public bool FullscreenMode => _fullscreenMode;
     public SreenResolutionEnum ScreenResolution => _screenResolution;
     public QualityEnum ShadowsQuality => _shadowsQuality;
     public QualityEnum TexturesQuality => _texturesQuality;
@@ -59,7 +65,14 @@ public class SettingsConfigurationSO : ScriptableObject
     #endregion
 
     #region Setters (Public)
-    public void SetResolution(int index) => _screenResolution = (SreenResolutionEnum)index;
+    public void ToggleFullscreen(bool state) => _fullscreenMode = state;
+    
+    public void SetResolution(int index) 
+    {
+        if (index == (int)SreenResolutionEnum.Unknown) return;
+        _screenResolution = (SreenResolutionEnum)index;
+    }
+    
     public void SetShadows(int index) => _shadowsQuality = (QualityEnum)index;
     public void SetTextures(int index) => _texturesQuality = (QualityEnum)index;
     public void SetRenderDistance(int index) => _renderDistance = (QualityEnum)index;

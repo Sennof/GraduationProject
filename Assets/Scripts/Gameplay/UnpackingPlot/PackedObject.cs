@@ -1,3 +1,5 @@
+using DG.Tweening;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent (typeof(Interactable), typeof(ItemObject))]
@@ -6,6 +8,7 @@ public class PackedObject : MonoBehaviour
     [SerializeField] private GameObject _unpackedObjectPrefab;
     private GameObject _unpackedObject;
 
+    private Coroutine _unpackingCor = null;
     public void Initialize()
     {
 
@@ -13,16 +16,13 @@ public class PackedObject : MonoBehaviour
 
     public void UnpackObject()
     {
-        // getting essential datas
-        Transform targetFolder = transform.GetComponent<ItemObject>().GetDefaultParent();
+        if(_unpackingCor != null)
+        {
+            StopCoroutine(_unpackingCor);
+            _unpackingCor = null;
+        } 
 
-        //making an object
-        _unpackedObject = Instantiate(_unpackedObjectPrefab, transform.position, Quaternion.identity, targetFolder);
-        _unpackedObject.GetComponent<ItemObject>().Initialize();
-        InitializeInteractingObject();
-        InitializeScripts();
-
-        Destroy(gameObject);
+        _unpackingCor = StartCoroutine(UnpackingRoutine());
     }
 
     private void InitializeInteractingObject()
@@ -39,5 +39,21 @@ public class PackedObject : MonoBehaviour
             if ((Object)script != this)
                 script.Initialize();
         }
+    }
+
+    private IEnumerator UnpackingRoutine()
+    {
+        Transform targetFolder = transform.GetComponent<ItemObject>().GetDefaultParent();
+        transform.DOScale(0, 0.5f);
+        transform.DORotate(new Vector3(0, 540, 0), 0.55f, RotateMode.FastBeyond360);
+
+        yield return new WaitForSeconds(0.5f);
+
+        _unpackedObject = Instantiate(_unpackedObjectPrefab, transform.position, Quaternion.identity, targetFolder);
+        _unpackedObject.GetComponent<ItemObject>().Initialize();
+        InitializeInteractingObject();
+        InitializeScripts();
+
+        Destroy(gameObject);
     }
 }

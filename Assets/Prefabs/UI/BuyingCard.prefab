@@ -624,7 +624,7 @@ GameObject:
   - component: {fileID: 2876253411119944164}
   - component: {fileID: 547797167783502653}
   - component: {fileID: 6423237249526978190}
-  - component: {fileID: 8107831731817537958}
+  - component: {fileID: 8531284144601400095}
   m_Layer: 5
   m_Name: IconBgFrame
   m_TagString: Untagged
@@ -648,9 +648,9 @@ RectTransform:
   m_Father: {fileID: 2430961592095767953}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: -12.5}
+  m_SizeDelta: {x: -40, y: -25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &547797167783502653
 CanvasRenderer:
@@ -680,8 +680,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: 5c6dc6e0d0aef9942b5f499fbeb3a715, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -689,8 +689,8 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!114 &8107831731817537958
+  m_PixelsPerUnitMultiplier: 3
+--- !u!114 &8531284144601400095
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -699,11 +699,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2608952453058051468}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
+  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AspectMode: 3
-  m_AspectRatio: 0.81
+  m_ShowMaskGraphic: 1
 --- !u!1 &2757779400919960227
 GameObject:
   m_ObjectHideFlags: 0
@@ -1370,7 +1369,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26.75
+  m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

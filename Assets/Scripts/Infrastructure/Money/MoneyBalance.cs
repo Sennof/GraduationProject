@@ -32,7 +32,7 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     {
         _moneyAmount += amount;
         GlobalStatsBridge.Instance.AddSummaryDailyEarn(description + " " + amount);
-
+        GlobalStatsBridge.Instance.AddMoney(amount);
         _ui.SetMoneyUI(_moneyAmount);
     }
 
@@ -40,6 +40,7 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     {
         _moneyAmount -= amount;
         GlobalStatsBridge.Instance.AddSummaryDailyExpenses(description + " " + amount);
+        GlobalStatsBridge.Instance.ReduceMoney(amount);
         _ui.SetMoneyUI(_moneyAmount);
     }
 

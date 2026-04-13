@@ -48,11 +48,15 @@ public class EntryPoint : BaseEntryPoint
         InitializeAll<BuildedObject>();
 
         //UI BELOW
+        InitializeAll<UIVersionSetter>();
+
         InitializeAll<UIPricing>();
         InitializeAll<InventoryUI>();
         InitializeAll<ShopUIFactory>();
         InitializeAll<UIShopSideMenu>();
         InitializeAll<SearchEngine>();
+
+        InitializeAll<DeliveryAnimationHandler>();
 
         //UI BELOW DELETE LATER (rewrite)
         InitializeAll<UIWorkerCard>();

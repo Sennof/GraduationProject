@@ -89,6 +89,11 @@ public class HomoObjectSwitcher : MonoBehaviour, IInitializable
         _isActive = false;
     }
 
+    public void OffByIndex(int id)
+    {
+        _homoObjects[id].TurnOff();
+    }
+
     public void OffCurrent()
     {
         _homoObjects[_currentIndex].TurnOff();

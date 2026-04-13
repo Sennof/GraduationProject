@@ -35,6 +35,19 @@ public class SettingsApplier : MonoBehaviour
     #region Private Methods
     private void ApplyGraphics()
     {
+        if (_settings.FullscreenMode)
+            Screen.fullScreen = true;
+        else 
+            Screen.fullScreen = false;
+
+        switch (_settings.ScreenResolution)
+        {
+            case SreenResolutionEnum.Res_800x600: Screen.SetResolution(800, 600, _settings.FullscreenMode); break;
+            case SreenResolutionEnum.Res_1536x864: Screen.SetResolution(1536, 864, _settings.FullscreenMode); break;
+            case SreenResolutionEnum.Res_1280x720: Screen.SetResolution(1280, 720, _settings.FullscreenMode); break;
+            case SreenResolutionEnum.Res_1920x1080: Screen.SetResolution(1920, 1080, _settings.FullscreenMode); break;
+        }
+
         switch (_settings.TexturesQuality)
         {
             case QualityEnum.Low: QualitySettings.globalTextureMipmapLimit = 2; break;
@@ -55,6 +68,13 @@ public class SettingsApplier : MonoBehaviour
             color.a = 1f - _settings.Brightness;
             _brightnessOverlay.color = color;
         }
+
+        Debug.Log($"[GRAPHICS SETTINGS LOG]\n" +
+            $"FullScreen: {_settings.FullscreenMode}" +
+            $"Resolution: {_settings.ScreenResolution}" +
+            $"Textures: {_settings.TexturesQuality}\n" +
+            $"Shadows: {_settings.ShadowsQuality}\n" +
+            $"Brigtness - {1 - _settings.Brightness}");
     }
 
     private void ApplyAudio()
@@ -64,11 +84,15 @@ public class SettingsApplier : MonoBehaviour
             _mainMixer.SetFloat(_volumeParameter, Mathf.Log10(Mathf.Clamp(_settings.VolumeLevel, 0.0001f, 1f)) * 20);
             _mainMixer.SetFloat(_vfxParameter, Mathf.Log10(Mathf.Clamp(_settings.VfxLevel, 0.0001f, 1f)) * 20);
         }
+
+        Debug.Log($"[AUDIO SETTINGS LOG]\n" +
+            $"MAIN: {_settings.VolumeLevel}\n" +
+            $"VFX: {_settings.VfxLevel}");
     }
 
     private void ApplySpecial()
     {
-        Debug.Log($"Cheats enabled status: {_settings.IsCheatsEnabled}");
+        Debug.Log($"[SPECIAL SETTINGS LOG]\nCheats: {_settings.IsCheatsEnabled}");
     }
     #endregion
 }

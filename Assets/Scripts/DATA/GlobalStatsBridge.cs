@@ -81,7 +81,7 @@ public class GlobalStatsBridge : MonoBehaviour, IInitializeable
 
     public int GetTotalProducts() => _data.TotalProducts;
 
-    public int GetMaxEarned() => _data.MaxEarned;
+    public int  GetMaxEarned() => _data.MaxEarned;
 
     public int GetTotalDeliveries() => _data.TotalDeliveries;
 

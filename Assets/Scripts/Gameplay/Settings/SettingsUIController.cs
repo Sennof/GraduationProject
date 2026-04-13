@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using TMPro;
 
@@ -11,6 +12,7 @@ public class SettingsUIController : MonoBehaviour
 
     [Header("Graphics UI")]
     [SerializeField] private bool _initializingGraphics = true;
+    [SerializeField] private Toggle _fullscreenToggle;
     [SerializeField] private TMP_Dropdown _resDropdown;
     [SerializeField] private TMP_Dropdown _shadowsDropdown;
     [SerializeField] private TMP_Dropdown _texturesDropdown;
@@ -45,6 +47,7 @@ public class SettingsUIController : MonoBehaviour
     {
         if (_initializingGraphics)
         {
+            _fullscreenToggle.onValueChanged.AddListener(HandleFullscreenChange);
             _resDropdown.onValueChanged.AddListener(HandleResolutionChange);
             _shadowsDropdown.onValueChanged.AddListener(HandleShadowsChange);
             _texturesDropdown.onValueChanged.AddListener(HandleTexturesChange);
@@ -52,14 +55,13 @@ public class SettingsUIController : MonoBehaviour
             _brightnessSlider.onValueChanged.AddListener(HandleBrightnessChange);
         }
 
-
         if (_initializingAudio)
         {
             _volumeSlider.onValueChanged.AddListener(HandleVolumeChange);
             _vfxSlider.onValueChanged.AddListener(HandleVfxChange);
         }
 
-        if(_initializingSpecial)
+        if (_initializingSpecial)
             _cheatsToggle.onValueChanged.AddListener(HandleCheatsChange);
     }
 
@@ -67,6 +69,7 @@ public class SettingsUIController : MonoBehaviour
     {
         if (_initializingGraphics)
         {
+            _fullscreenToggle.onValueChanged.RemoveListener(HandleFullscreenChange);
             _resDropdown.onValueChanged.RemoveListener(HandleResolutionChange);
             _shadowsDropdown.onValueChanged.RemoveListener(HandleShadowsChange);
             _texturesDropdown.onValueChanged.RemoveListener(HandleTexturesChange);
@@ -74,19 +77,19 @@ public class SettingsUIController : MonoBehaviour
             _brightnessSlider.onValueChanged.RemoveListener(HandleBrightnessChange);
         }
 
-
         if (_initializingAudio)
         {
             _volumeSlider.onValueChanged.RemoveListener(HandleVolumeChange);
             _vfxSlider.onValueChanged.RemoveListener(HandleVfxChange);
         }
 
-        if(_initializingSpecial)
+        if (_initializingSpecial)
             _cheatsToggle.onValueChanged.RemoveListener(HandleCheatsChange);
     }
     #endregion
 
     #region Event Handlers
+    private void HandleFullscreenChange(bool state) => UpdateSetting(() => _settingsSO.ToggleFullscreen(state));
     private void HandleResolutionChange(int index) => UpdateSetting(() => _settingsSO.SetResolution(index));
     private void HandleShadowsChange(int index) => UpdateSetting(() => _settingsSO.SetShadows(index));
     private void HandleTexturesChange(int index) => UpdateSetting(() => _settingsSO.SetTextures(index));
@@ -108,6 +111,8 @@ public class SettingsUIController : MonoBehaviour
     {
         if (_initializingGraphics)
         {
+            _fullscreenToggle.isOn = _settingsSO.FullscreenMode;
+
             _resDropdown.value = (int)_settingsSO.ScreenResolution;
             _shadowsDropdown.value = (int)_settingsSO.ShadowsQuality;
             _texturesDropdown.value = (int)_settingsSO.TexturesQuality;
@@ -115,14 +120,13 @@ public class SettingsUIController : MonoBehaviour
             _brightnessSlider.value = _settingsSO.Brightness;
         }
 
-
         if (_initializingAudio)
         {
             _volumeSlider.value = _settingsSO.VolumeLevel;
             _vfxSlider.value = _settingsSO.VfxLevel;
         }
 
-        if(_initializingSpecial)
+        if (_initializingSpecial)
             _cheatsToggle.isOn = _settingsSO.IsCheatsEnabled;
     }
     #endregion

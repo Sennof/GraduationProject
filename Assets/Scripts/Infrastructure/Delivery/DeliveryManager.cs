@@ -7,13 +7,15 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
 {
     [Inject]
     [SerializeField] private IMoneyBalance _moneyBalance;
-
     [SerializeField] private Transform _folder;
-    [SerializeField] private Transform _spawnPoint;
+    [SerializeField] private float _spawnCooldown = 1f;
 
     private List<GameObject> _generatedObjects = new();
     private EventBinding<DeliveryRequestingEvent> _eventBinding;
     private Coroutine _spawningObjectsCor = null;
+
+    private int _spawnColumns = 3;
+    private int _spawnRows = 4;
 
     public void Initialize()
     {
@@ -35,6 +37,8 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
             Debug.LogError("Not enough data | DeliveryManager");
             return;
         }
+
+        EventBus<DeliveryResponseEvent>.Raise(new DeliveryResponseEvent { isSuccess = true});
         _moneyBalance.RemoveMoney(eventData.ProductData.Price * eventData.Amount, $"Доставка({eventData.Amount}шт.) {eventData.ProductData.TitleName} {eventData.ProductData.Price * eventData.Amount}");
         GlobalStatsBridge.Instance.AddTotalDeliveries();
 
@@ -50,15 +54,18 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
         }
         else
         {
-            SpawnObject(eventData.ProductData, 1);
+            SpawnObject(eventData.ProductData, 1, new Vector3(0, 0, 0));
             InitializeObjectData(0);
             InitializePackedObjectLayout(0, eventData.ProductData.Icon);
         }
     }
 
-    private void SpawnObject(ProductData _data, int id)
+    private void SpawnObject(ProductData _data, int id, Vector3 pos)
     {
-        GameObject obj = Instantiate(_data.Prefab, _spawnPoint.position, Quaternion.identity, _folder);
+        GameObject obj = Instantiate(_data.Prefab);
+        obj.transform.SetParent(_folder);
+        obj.transform.localPosition = pos;
+
         obj.name = obj.name + " " + _data.ObjectName + " " + id;
         obj.SetActive(true);
 
@@ -82,15 +89,29 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
 
     private IEnumerator SpawningObjects(DeliveryRequestingEvent eventData)
     {
+        float x = eventData.ProductData.Prefab.transform.localScale.x;
+        float z = eventData.ProductData.Prefab.transform.localScale.z;
+
+        int preGenerated = _folder.transform.childCount;
+
         for (int i = 0; i < eventData.Amount; i++)
         {
-            SpawnObject(eventData.ProductData, i + 1);
+            SpawnObject(eventData.ProductData, i + 1, CalcPosition(preGenerated + i, x, z));
             InitializeObjectData(i);
             InitializePackedObjectLayout(i, eventData.ProductData.Icon);
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(_spawnCooldown);
         }
 
-        ResetData();    
+        ResetData();
+    }
+
+    private Vector3 CalcPosition(int totalIndex, float x, float z)
+    {
+        int xPos = totalIndex % _spawnColumns;
+        int zPos = (totalIndex / _spawnColumns) % _spawnRows;
+        int yPos = totalIndex / (_spawnColumns * _spawnRows);
+        Vector3 targetPos = new Vector3(xPos * x, yPos, zPos * z);
+        return targetPos;
     }
 }
