@@ -3,38 +3,56 @@
 [ExecuteInEditMode]
 public class Zoom : MonoBehaviour
 {
-    [SerializeField]
-    private bool _enabled = true;
-    Camera camera;
-    public float defaultFOV = 60;
-    public float maxZoomFOV = 15;
-    [Range(0, 1)]
-    public float currentZoom;
-    public float sensitivity = 1;
+    #region Fields
+
+    [Header("State")]
+    [Tooltip("Enable or disable zoom.")]
+    [SerializeField] private bool _enabled = true;
+
+    [Header("Settings")]
+    [Tooltip("Default field of view.")]
+    public float DefaultFOV = 60;
+    [Tooltip("Maximum zoom field of view.")]
+    public float MaxZoomFOV = 15;
+    [Tooltip("Current zoom amount (0 to 1).")]
+    [Range(0, 1)] public float CurrentZoom;
+    [Tooltip("Zoom sensitivity.")]
+    public float Sensitivity = 1;
+
+    private Camera _camera;
+
+    #endregion
 
 
-    void Awake()
+    #region Unity Methods
+
+    private void Awake()
     {
-        // Get the camera on this gameObject and the defaultZoom.
-        camera = GetComponent<Camera>();
-        if (camera)
+        _camera = GetComponent<Camera>();
+        if (_camera)
         {
-            defaultFOV = camera.fieldOfView;
+            DefaultFOV = _camera.fieldOfView;
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (enabled)
         {
-            // Update the currentZoom and the camera's fieldOfView.
-            currentZoom += Input.mouseScrollDelta.y * sensitivity * .05f;
-            currentZoom = Mathf.Clamp01(currentZoom);
-            camera.fieldOfView = Mathf.Lerp(defaultFOV, maxZoomFOV, currentZoom);
+            CurrentZoom += Input.mouseScrollDelta.y * Sensitivity * .05f;
+            CurrentZoom = Mathf.Clamp01(CurrentZoom);
+            _camera.fieldOfView = Mathf.Lerp(DefaultFOV, MaxZoomFOV, CurrentZoom);
         }
     }
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Enable() => _enabled = true;
 
     public void Disable() => _enabled = false;
+
+    #endregion
 }

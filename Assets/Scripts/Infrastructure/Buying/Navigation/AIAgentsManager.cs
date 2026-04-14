@@ -6,70 +6,95 @@ using UnityEngine;
 public class AIAgentsManager : MonoBehaviour, IInitializeable
 {
     #region Fields
+
     [Header("Links")]
+    [Tooltip("Reference to the product generator for creating customer shopping lists.")]
     [SerializeField] private ProductGenerator _productGenerator;
 
     [Header("General Settings")]
+    [Tooltip("Enables or disables the spawning of AI agents.")]
     [SerializeField] private bool _enabled = true;
+    [Tooltip("Maximum number of simultaneously active agents.")]
     [SerializeField] private int _maxAgents = 2;
 
     [Header("Spawn Settings")]
+    [Tooltip("Minimum cooldown between agent spawns in seconds.")]
     [SerializeField, Range(1, 100)] private int _visitCooldownMin = 2;
+    [Tooltip("Maximum cooldown between agent spawns in seconds.")]
     [SerializeField, Range(2, 101)] private int _visitCooldownMax = 10;
+    [Tooltip("List of agent prefabs to spawn randomly.")]
     [SerializeField] private List<GameObject> _agentPrefabs = new();
-    [SerializeField] private Vector3 _spawnpoint = Vector3.zero;
+    [Tooltip("Spawn point for new agents.")]
+    [SerializeField] private Vector3 _spawnPoint = Vector3.zero;
+    [Tooltip("Parent transform to organize spawned agents in hierarchy.")]
     [SerializeField] private Transform _folder;
 
     [Header("Queue Settings")]
+    [Tooltip("Position where customers stand to pay.")]
     [SerializeField] private Vector3 _buyingPlacePoint = Vector3.zero;
+    [Tooltip("Direction in which the queue extends from the buying point.")]
     [SerializeField] private Vector3 _queueDirection = new Vector3(0, 0, -1);
+    [Tooltip("Distance between customers in the queue.")]
     [SerializeField] private float _queueSpacing = 1.2f;
+    [Tooltip("Current list of customers waiting in line.")]
     [SerializeField] private List<AICustomer> _customerQueue = new();
 
     [Header("Debug Info")]
+    [Tooltip("List of currently active agent instances.")]
     [SerializeField] private List<GameObject> _activeAgents = new();
+    [Tooltip("Navigation points collected from shelves for agent waypoints.")]
     [SerializeField] private List<Vector3> _navPoints = new();
 
-    private Coroutine _trafficCor = null;
-    private EventBinding<OnShelfInitializationEvent> _shelfBinding = null;
-    private EventBinding<PaymentResponseEvent> _paymentFinishedBinding = null;
-    private EventBinding<OnRatingLevelChange> _ratingLevelChangeBinding = null;
+    private Coroutine _trafficCoroutine;
+    private EventBinding<OnShelfInitializationEvent> _shelfEventBinding;
+    private EventBinding<PaymentResponseEvent> _paymentFinishedEventBinding;
+    private EventBinding<OnRatingLevelChange> _ratingLevelChangeEventBinding;
+
     #endregion
 
+
     #region Unity Methods
+
     private void Update()
     {
         if (_visitCooldownMin >= _visitCooldownMax)
+        {
             _visitCooldownMax = _visitCooldownMin + 1;
+        }
     }
 
     private void OnDisable()
     {
-        EventBus<OnShelfInitializationEvent>.Deregister(_shelfBinding);
-        EventBus<PaymentResponseEvent>.Deregister(_paymentFinishedBinding);
-        EventBus<OnRatingLevelChange>.Deregister(_ratingLevelChangeBinding);
+        EventBus<OnShelfInitializationEvent>.Deregister(_shelfEventBinding);
+        EventBus<PaymentResponseEvent>.Deregister(_paymentFinishedEventBinding);
+        EventBus<OnRatingLevelChange>.Deregister(_ratingLevelChangeEventBinding);
     }
+
     #endregion
 
+
     #region Public Methods
+
     public void Initialize()
     {
         _activeAgents.Clear();
         _customerQueue.Clear();
 
-        _shelfBinding = new EventBinding<OnShelfInitializationEvent>(HandleShelfEvent);
-        EventBus<OnShelfInitializationEvent>.Register(_shelfBinding);
+        _shelfEventBinding = new EventBinding<OnShelfInitializationEvent>(HandleShelfEvent);
+        EventBus<OnShelfInitializationEvent>.Register(_shelfEventBinding);
 
-        _paymentFinishedBinding = new EventBinding<PaymentResponseEvent>(HandlePaymentFinished);
-        EventBus<PaymentResponseEvent>.Register(_paymentFinishedBinding);
+        _paymentFinishedEventBinding = new EventBinding<PaymentResponseEvent>(HandlePaymentFinished);
+        EventBus<PaymentResponseEvent>.Register(_paymentFinishedEventBinding);
 
-        _ratingLevelChangeBinding = new EventBinding<OnRatingLevelChange>(HandleRatingChange);
-        EventBus<OnRatingLevelChange>.Register(_ratingLevelChangeBinding);
+        _ratingLevelChangeEventBinding = new EventBinding<OnRatingLevelChange>(HandleRatingChange);
+        EventBus<OnRatingLevelChange>.Register(_ratingLevelChangeEventBinding);
 
-        if (_trafficCor != null)
-            StopCoroutine(_trafficCor);
+        if (_trafficCoroutine != null)
+        {
+            StopCoroutine(_trafficCoroutine);
+        }
 
-        _trafficCor = StartCoroutine(TrafficGoingRoutine());
+        _trafficCoroutine = StartCoroutine(TrafficGoingRoutine());
     }
 
     public void KillAgent(GameObject agent)
@@ -80,9 +105,37 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             Destroy(agent);
         }
     }
+
     #endregion
 
-    #region Traffic Systems
+
+    #region Traffic Logic
+
+    private void SpawnAgent()
+    {
+        GameObject prefab = _agentPrefabs[Random.Range(0, _agentPrefabs.Count)];
+        GameObject agent = Instantiate(prefab, _spawnPoint, Quaternion.identity, _folder);
+        _activeAgents.Add(agent);
+
+        if (agent.TryGetComponent(out AICustomer customer))
+        {
+            customer.Initialize(GenerateWaypoints(), _productGenerator.GenerateProducts(), this);
+        }
+    }
+
+    private Vector3[] GenerateWaypoints()
+    {
+        int wayLength = Random.Range(1, Mathf.Min(4, _navPoints.Count + 1));
+        List<Vector3> way = new List<Vector3>();
+
+        for (int i = 0; i < wayLength; i++)
+        {
+            way.Add(_navPoints[Random.Range(0, _navPoints.Count)]);
+        }
+
+        return way.ToArray();
+    }
+
     private IEnumerator TrafficGoingRoutine()
     {
         while (true)
@@ -99,39 +152,17 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         }
     }
 
-    private void SpawnAgent()
-    {
-        GameObject prefab = _agentPrefabs[Random.Range(0, _agentPrefabs.Count)];
-        GameObject agent = Instantiate(prefab, _spawnpoint, Quaternion.identity, _folder);
-        _activeAgents.Add(agent);
-
-        if (agent.TryGetComponent(out AICustomer customer))
-        {
-            customer.Initialize(GenerateWay(), _productGenerator.GenerateProducts(), this);
-        }
-    }
-
-    private Vector3[] GenerateWay()
-    {
-        int wayLength = Random.Range(1, Mathf.Min(4, _navPoints.Count + 1));
-        List<Vector3> way = new List<Vector3>();
-
-        for (int i = 0; i < wayLength; i++)
-        {
-            way.Add(_navPoints[Random.Range(0, _navPoints.Count)]);
-        }
-
-        return way.ToArray();
-    }
-
     private IEnumerator CooldownedKillingRoutine(AICustomer agent, float cooldown)
     {
         yield return new WaitForSeconds(cooldown);
         KillAgent(agent.gameObject);
     }
+
     #endregion
 
-    #region Queue Systems
+
+    #region Queue Logic
+
     public void JoinQueue(AICustomer customer)
     {
         if (!_customerQueue.Contains(customer))
@@ -144,7 +175,9 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             customer.MoveToQueuePoint(targetPos);
 
             if (_customerQueue.Count == 1)
+            {
                 StartCoroutine(CheckAndSendPaymentRequest());
+            }
         }
     }
 
@@ -157,7 +190,9 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         }
 
         if (_customerQueue.Count > 0)
+        {
             StartCoroutine(CheckAndSendPaymentRequest());
+        }
     }
 
     private Vector3 CalculateQueuePosition(int index)
@@ -168,13 +203,18 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     private IEnumerator CheckAndSendPaymentRequest()
     {
         if (_customerQueue.Count == 0)
+        {
             yield break;
+        }
 
         AICustomer first = _customerQueue[0];
 
         yield return new WaitUntil(() =>
         {
-            if (first == null) return true;
+            if (first == null)
+            {
+                return true;
+            }
 
             Vector3 pos1 = first.transform.position;
             Vector3 pos2 = _buyingPlacePoint;
@@ -184,14 +224,17 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             return flatDistance < (first.GetMinReachDistance() + 0.2f);
         });
 
-        if (first == null) yield break;
+        if (first == null)
+        {
+            yield break;
+        }
 
         GameObject[] products = first.GetProducts();
 
         if (products == null || products.Length < 1)
         {
             _customerQueue.RemoveAt(0);
-            first.ReleaseFromQueue(_spawnpoint);
+            first.ReleaseFromQueue(_spawnPoint);
             AdvanceQueue();
             yield return new WaitForSeconds(7f);
             KillAgent(first.gameObject);
@@ -200,9 +243,12 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
         EventBus<PaymentRequestEvent>.Raise(new PaymentRequestEvent { Products = products });
     }
+
     #endregion
 
+
     #region Event Handlers
+
     private void HandlePaymentFinished(PaymentResponseEvent eventData)
     {
         if (_customerQueue.Count > 0)
@@ -210,7 +256,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             AICustomer finisher = _customerQueue[0];
             _customerQueue.RemoveAt(0);
 
-            finisher.ReleaseFromQueue(_spawnpoint);
+            finisher.ReleaseFromQueue(_spawnPoint);
             AdvanceQueue();
             StartCoroutine(CooldownedKillingRoutine(finisher, 7));
         }
@@ -219,15 +265,18 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     private void HandleShelfEvent(OnShelfInitializationEvent data)
     {
         if (data.Adding)
+        {
             _navPoints.Add(data.GlobalPosition);
+        }
         else
+        {
             _navPoints.Remove(data.GlobalPosition);
+        }
     }
-
 
     private void HandleRatingChange(OnRatingLevelChange eventData)
     {
-        switch(eventData.Level)
+        switch (eventData.Level)
         {
             case LevelsEnum.Level0:
                 _visitCooldownMin = 12;

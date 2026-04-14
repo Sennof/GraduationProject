@@ -3,8 +3,15 @@ using UnityEngine;
 
 public class NetworkLinkOpener : MonoBehaviour
 {
+    #region Fields
+
     private string _vkLink = "https://vk.com/sennof";
     private string _tgLink = "https://t.me/SennoProduction";
+
+    #endregion
+
+
+    #region Public Methods
 
     public void OpenLink(string id)
     {
@@ -18,4 +25,6 @@ public class NetworkLinkOpener : MonoBehaviour
                 break;
         }
     }
+
+    #endregion
 }

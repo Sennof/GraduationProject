@@ -3,7 +3,8 @@ using UnityEngine;
 
 public interface IEvent { }
 
-#region delivery
+#region Delivery
+
 public struct DeliveryShopOnClickEvent : IEvent
 {
     public ProductData ProductData;
@@ -15,15 +16,16 @@ public struct DeliveryRequestingEvent : IEvent
     public ProductData ProductData;
 }
 
-public struct DeliveryResponseEvent : IEvent 
+public struct DeliveryResponseEvent : IEvent
 {
-    public bool isSuccess;
+    public bool IsSuccess;
 }
 
 #endregion
 
-#region building
-public struct BuildingModeTriggerEvent : IEvent 
+#region Building
+
+public struct BuildingModeTriggerEvent : IEvent
 {
     public Transform TargetFolder;
 }
@@ -32,9 +34,11 @@ public struct RemoveBuildingEvent : IEvent
 {
     public GameObject Target;
 }
+
 #endregion
 
-#region initializers
+#region Initializers
+
 public struct ShelfDataRequestingEvent : IEvent
 {
     public GameObject Target;
@@ -67,28 +71,33 @@ public struct BuildingWrenchResponsingEvent : IEvent
     public GameObject Target;
     public Transform RaycastFolder;
 }
+
 #endregion
 
-#region buying
+#region Buying
+
 public struct ShelfVisitPointTranslatingEvent : IEvent
 {
-    public GameObject _target;
+    public GameObject Target;
 }
+
 #endregion
 
 #region DayCycle
+
 public struct OnDayStateChangeEvent : IEvent
 {
-    public bool isDay;
+    public bool IsDay;
 }
+
 #endregion
 
-#region Buying & buyers
+#region BuyingAndBuyers
+
 public struct OnShelfInitializationEvent : IEvent
 {
     public Vector3 GlobalPosition;
     public bool Adding;
-
     public Shelf Shelf;
 }
 
@@ -99,14 +108,16 @@ public struct PaymentRequestEvent : IEvent
 
 public struct UIPaymentCardOperation : IEvent
 {
-    public bool isPlus;
+    public bool IsPlus;
     public int Price;
 }
 
-public struct PaymentResponseEvent : IEvent {}
+public struct PaymentResponseEvent : IEvent { }
+
 #endregion
 
-#region else
+#region Else
+
 public struct UnpackingEvent : IEvent
 {
     public float Distance;
@@ -120,11 +131,12 @@ public struct ItemPickUpEvent : IEvent
 
 public struct OnShopStateChanging : IEvent
 {
-    public bool isOpen;
+    public bool IsOpen;
 }
 
 public struct OnRatingLevelChange : IEvent
 {
     public LevelsEnum Level;
 }
+
 #endregion

@@ -3,15 +3,26 @@ using UnityEngine;
 
 public class UIGlobalStatistics : MonoBehaviour
 {
+    #region Fields
+
+    [Header("UI Elements")]
+    [Tooltip("Main text for statistics.")]
     [SerializeField] private TMP_Text _mainText;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void SetUI()
     {
-        _mainText.text = $"Всего посетителей: {GlobalStatsBridge.Instance.GetTotalBuyers()}\n" +
-            $"Всего товаров продано: {GlobalStatsBridge.Instance.GetTotalProducts()}\n\n" +
-            $"Всего доставок: {GlobalStatsBridge.Instance.GetTotalDeliveries()}\n\n" +
-            $"Самый крупный чек: {GlobalStatsBridge.Instance.GetMaxEarned()}\n" +
-            $"Всего заработано: {GlobalStatsBridge.Instance.GetTotalEarned()}\n" +
-            $"Всего потрачено: {GlobalStatsBridge.Instance.GetTotalSpent()}";
+        _mainText.text = $"Total visitors: {GlobalStatsBridge.Instance.GetTotalBuyers()}\n" +
+            $"Total products sold: {GlobalStatsBridge.Instance.GetTotalProducts()}\n\n" +
+            $"Total deliveries: {GlobalStatsBridge.Instance.GetTotalDeliveries()}\n\n" +
+            $"Largest receipt: {GlobalStatsBridge.Instance.GetMaxEarned()}\n" +
+            $"Total earned: {GlobalStatsBridge.Instance.GetTotalEarned()}\n" +
+            $"Total spent: {GlobalStatsBridge.Instance.GetTotalSpent()}";
     }
+
+    #endregion
 }

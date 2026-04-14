@@ -4,64 +4,107 @@ using UnityEngine.Events;
 
 public class InteractingObject : MonoBehaviour
 {
-    #region State Settings
+    #region Fields
+
     [Header("State Settings")]
-    [Tooltip("Global toggle to control the system's operation time")]
+    [Tooltip("Global toggle to control system operation.")]
     [SerializeField] private bool _enabled = true;
-
-    [Tooltip("Flag to determine if the object is currently held in hands")]
+    [Tooltip("Whether the object is currently held in hands.")]
     [SerializeField] private bool _inHands = false;
-    #endregion
 
     [Space(10)]
 
-    #region Detection Settings
     [Header("Detection & Raycasting")]
-    [Tooltip("Determine if this logic requires a raycast check")]
+    [Tooltip("Require raycast check for activation.")]
     [SerializeField] private bool _needRaycast = true;
-
-    [Tooltip("The origin point from which the ray is cast (e.g., Camera or Eyes)")]
+    [Tooltip("Origin point for the interaction raycast.")]
     [SerializeField] private Transform _raycastStartPoint;
-    #endregion
 
     [Space(10)]
 
-    #region Interaction & Events
     [Header("Interaction & Results")]
-    [Tooltip("List of actions triggered upon activation")]
+    [Tooltip("Actions triggered upon activation.")]
     [SerializeField] private UnityEvent _actions;
-
-    [Tooltip("Target folder where generated or moved objects will be placed")]
+    [Tooltip("Target folder for generated or moved objects.")]
     [SerializeField] private Transform _targetObjectFolder;
-    private GameObject _hittedObject = null;
-    #endregion
 
     [Space(10)]
 
-    #region Input Configuration
     [Header("Input Configuration")]
-    [Tooltip("The key used to trigger the interaction")]
+    [Tooltip("Key to trigger the interaction.")]
     [SerializeField] private KeyCode _triggerKey = KeyCode.F;
-    [Tooltip("")]
+    [Tooltip("Enable distance check for activation.")]
     [SerializeField] private bool _needDistance = false;
-    [Tooltip("")]
+    [Tooltip("Maximum activation distance.")]
     [SerializeField] private float _actDistance = 0;
 
+    private GameObject _hittedObject = null;
+
     #endregion
+
+
+    #region Public Methods
 
     public void Initialize(Transform raycastStartPoint)
     {
         _raycastStartPoint = raycastStartPoint;
     }
 
-    public void SetTargetObjectFolder(Transform TargetObjectFolder)
+    public void SetTargetObjectFolder(Transform targetObjectFolder)
     {
-        _targetObjectFolder = TargetObjectFolder;
+        _targetObjectFolder = targetObjectFolder;
     }
+
+    public Transform GetTargetObjectFolder() => _targetObjectFolder;
+
+    public GameObject GetTargetObject() => _hittedObject;
+
+    public float GetDistanceToTarget() => Vector3.Distance(transform.position, _hittedObject.transform.position);
+
+    public float GetActDistance()
+    {
+        if (_needDistance)
+        {
+            return _actDistance;
+        }
+        else
+        {
+            return 1000f;
+        }
+    }
+
+    public void SetInHands() => _inHands = true;
+
+    public void SetOutHands() => _inHands = false;
+
+    #endregion
+
+
+    #region Private Methods
+
+    private Transform ThrowRay()
+    {
+        RaycastHit rayHit;
+
+        if (Physics.Raycast(_raycastStartPoint.position, _raycastStartPoint.TransformDirection(Vector3.forward), out rayHit, 5))
+        {
+            return rayHit.transform;
+        }
+
+        return null;
+    }
+
+    #endregion
+
+
+    #region Unity Methods
 
     private void Update()
     {
-        if (_enabled == false || _inHands == false) return;
+        if (_enabled == false || _inHands == false)
+        {
+            return;
+        }
 
         if (Input.GetKeyDown(_triggerKey))
         {
@@ -72,14 +115,17 @@ public class InteractingObject : MonoBehaviour
             }
 
             Transform hitObj = ThrowRay();
-            if (hitObj == null) 
+            if (hitObj == null)
             {
-                _hittedObject = null;    
+                _hittedObject = null;
                 return;
             }
             _hittedObject = hitObj.gameObject;
 
-            if (_targetObjectFolder.childCount == 0) return;
+            if (_targetObjectFolder.childCount == 0)
+            {
+                return;
+            }
 
             foreach (Transform child in _targetObjectFolder)
             {
@@ -92,34 +138,5 @@ public class InteractingObject : MonoBehaviour
         }
     }
 
-    public Transform GetTargetObjectFolder() => _targetObjectFolder;
-
-    public GameObject GetTargetObject() => _hittedObject;
-
-    public float GetDistanceToTarget() => Vector3.Distance(transform.position, _hittedObject.transform.position);
-
-    public float GetActDistance()
-    {
-        if (_needDistance)
-            return _actDistance;
-        else
-            return 1000f;
-    }
-
-    public void SetInHands() => _inHands = true;
-
-    public void SetOutHands() => _inHands = false;
-
-    private Transform ThrowRay()
-    {
-        RaycastHit rayHit;
-
-        if(Physics.Raycast(_raycastStartPoint.position, _raycastStartPoint.TransformDirection(Vector3.forward), out rayHit, 5))
-        {
-            return rayHit.transform;
-        }
-
-        return null;
-    }
-
+    #endregion
 }

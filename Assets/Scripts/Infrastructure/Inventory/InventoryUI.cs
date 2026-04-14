@@ -5,21 +5,29 @@ using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour, IInitializable
 {
-    #region Variables
+    #region Fields
+
+    [Header("Settings")]
+    [Tooltip("Default color for unselected slot frames.")]
     [SerializeField] private Color _defaultFrameColor;
 
+    [Header("UI Elements")]
+    [Tooltip("List of frame images for slots.")]
     [SerializeField] private List<Image> _frameImages;
+    [Tooltip("List of icon images for slots.")]
     [SerializeField] private List<Image> _iconImages;
-    #endregion 
 
-    // Sequence of methods:
-    // 1. Checking if any data missing
-    // 2. Settings the slots' frame color to default (unselected)
-    // 3. Selecting default slot (0)
+    #endregion
+
+
+    #region Public Methods
+
     public void Initialize()
     {
         if (_frameImages.Count != 2 || _iconImages.Count != 2 || _defaultFrameColor == null)
+        {
             Debug.LogError($"Some necessary data is missing. Instability is possible | {name}");
+        }
 
         foreach (Image image in _frameImages)
         {
@@ -29,7 +37,6 @@ public class InventoryUI : MonoBehaviour, IInitializable
         SelectSlot(0);
     }
 
-    // Sets the sprite to the icon's image
     public void SetIcon(Sprite sprite, int index)
     {
         if (index > 1 || index < 0)
@@ -42,21 +49,19 @@ public class InventoryUI : MonoBehaviour, IInitializable
         _iconImages[index].color = Color.white;
     }
 
-    // Clear the icon's image
-    // Then makes it transparent
     public void ClearIcon(int index)
     {
         _iconImages[index].sprite = null;
         _iconImages[index].color = new Color(0, 0, 0, 0);
     }
 
-    // Sets the color of the frame
-    // Default OR Selected
-    public void SelectSlot(int index) 
+    public void SelectSlot(int index)
     {
         int disableSlot = 1 - index;
 
         _frameImages[disableSlot].color = _defaultFrameColor;
         _frameImages[index].color = new Color(_defaultFrameColor.r, _defaultFrameColor.g, _defaultFrameColor.b - 35, _defaultFrameColor.a);
     }
+
+    #endregion
 }

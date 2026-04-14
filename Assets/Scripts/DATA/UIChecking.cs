@@ -2,7 +2,15 @@ using UnityEngine;
 
 public class UIChecking : MonoBehaviour, IInitializeable
 {
+    #region Fields
+
+    [Tooltip("Current UI active state.")]
     [SerializeField] private bool _uiActive = false;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Initialize()
     {
@@ -14,4 +22,6 @@ public class UIChecking : MonoBehaviour, IInitializeable
     public void TurnOffState() => _uiActive = false;
 
     public bool GetState() => _uiActive;
+
+    #endregion
 }

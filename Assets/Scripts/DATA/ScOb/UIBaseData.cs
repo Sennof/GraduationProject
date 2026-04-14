@@ -4,13 +4,16 @@ using UnityEngine;
 public class UIBaseData : ScriptableObject
 {
     #region UI
-    [Header("UI")]
 
-    [Tooltip("Main text")]
+    [Header("UI")]
+    [Tooltip("Main display text.")]
     public string TitleName;
-    [Tooltip("Additional text")]
+
+    [Tooltip("Additional descriptive text.")]
     public string Description;
-    [Tooltip("Displayed icon")]
+
+    [Tooltip("Displayed icon.")]
     public Sprite Icon;
+
     #endregion
 }

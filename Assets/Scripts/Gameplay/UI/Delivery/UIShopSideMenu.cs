@@ -7,14 +7,28 @@ using Zenject;
 
 public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializable
 {
+    #region Fields
+
+    [Header("Services")]
+    [Tooltip("Money balance service.")]
     [SerializeField] private MoneyBalance _moneyBalance;
+
+    [Header("UI Elements")]
+    [Tooltip("Text for product title.")]
     [SerializeField] private TMP_Text _titleText;
+    [Tooltip("Text for product description.")]
     [SerializeField] private TMP_Text _descriptionText;
+    [Tooltip("Text for amount.")]
     [SerializeField] private TMP_Text _amountText;
 
+    [Header("Delivery Button")]
+    [Tooltip("Button to request delivery.")]
     [SerializeField] private Button _deliveryRequestButton;
+    [Tooltip("Text on delivery button.")]
     [SerializeField] private TMP_Text _deliveryRequestButtonText;
 
+    [Header("Settings")]
+    [Tooltip("Default button text.")]
     [SerializeField] private string _defaultButtonText;
 
     private EventBinding<DeliveryShopOnClickEvent> _onClickEventBinding;
@@ -26,13 +40,10 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
     private Coroutine _deliveryRequestCooldownCor = null;
     private bool _dayState = true;
 
-    private void OnDisable()
-    {
-        EventBus<DeliveryShopOnClickEvent>.Deregister(_onClickEventBinding);
-        EventBus<OnDayStateChangeEvent>.Deregister(_onDayStateChangeBinding);
+    #endregion
 
-        _onClickEventBinding = null;
-    }
+
+    #region Public Methods
 
     public void Initialize()
     {
@@ -47,19 +58,16 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
 
     public void RequestDelivery()
     {
-        //invoke event for spawning objects
-        //data to transfer:
-        //1. amount
-        //2. productData
-
         if (_productData == null)
+        {
             return;
+        }
 
         Debug.Log($"DELIVERY REQUESTED | {this.name} by {gameObject.name}");
 
-        if(_deliveryRequestCooldownCor != null)
+        if (_deliveryRequestCooldownCor != null)
         {
-            StopCoroutine( _deliveryRequestCooldownCor );
+            StopCoroutine(_deliveryRequestCooldownCor);
             _deliveryRequestCooldownCor = null;
         }
 
@@ -77,7 +85,10 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
 
     public void AddProductAmount()
     {
-        if (_productData == null) return; 
+        if (_productData == null)
+        {
+            return;
+        }
 
         _productAmount++;
         _amountText.text = _productAmount.ToString();
@@ -85,24 +96,33 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
 
     public void SubtractProductAmount()
     {
-        if (_productData == null) return;
+        if (_productData == null)
+        {
+            return;
+        }
 
-        if (_productAmount > 1) _productAmount--;
+        if (_productAmount > 1)
+        {
+            _productAmount--;
+        }
         _amountText.text = _productAmount.ToString();
     }
+
+    #endregion
+
+
+    #region Private Methods
 
     private void ResetMenu()
     {
         _productData = null;
         _productAmount = 1;
 
-        _titleText.text = "Выберите товар";
+        _titleText.text = "Select product";
         _descriptionText.text = "";
         _amountText.text = "-";
         _deliveryRequestButton.interactable = false;
     }
-
-    private void HandleProductClick(DeliveryShopOnClickEvent eventData) => SetText(eventData.ProductData); 
 
     private void SetText(ProductData data)
     {
@@ -110,20 +130,52 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
         _productData = data;
 
         _titleText.text = data.TitleName;
-        _descriptionText.text = $"{data.Description}" +
-            $"\n\nЦена за шт.:{data.Price}";
+        _descriptionText.text = $"{data.Description}\n\nPrice per item: {data.Price}";
         _amountText.text = _productAmount.ToString();
-        
-        if(_deliveryRequestCooldownCor == null && _dayState)
+
+        if (_deliveryRequestCooldownCor == null && _dayState)
         {
             _deliveryRequestButton.interactable = true;
         }
     }
 
+    #endregion
+
+
+    #region Event Handlers
+
+    private void HandleProductClick(DeliveryShopOnClickEvent eventData) => SetText(eventData.ProductData);
+
+    private void HandleDayCycleChange(OnDayStateChangeEvent eventData)
+    {
+        if (eventData.IsDay == true)
+        {
+            _deliveryRequestButton.interactable = true;
+            _deliveryRequestButtonText.text = _defaultButtonText;
+            _dayState = true;
+            return;
+        }
+
+        if (_deliveryRequestCooldownCor != null)
+        {
+            StopCoroutine(_deliveryRequestCooldownCor);
+            _deliveryRequestCooldownCor = null;
+        }
+
+        _dayState = false;
+        _deliveryRequestButton.interactable = false;
+        _deliveryRequestButtonText.text = "<i>Come back tomorrow!</i>";
+    }
+
+    #endregion
+
+
+    #region Coroutines
+
     private IEnumerator DeliveryRequestCooldown(int time)
     {
         _deliveryRequestButton.interactable = false;
-        _deliveryRequestButtonText.text = "<i>Ожидайте...</i>";
+        _deliveryRequestButtonText.text = "<i>Waiting...</i>";
 
         yield return new WaitForSeconds(time);
 
@@ -132,24 +184,18 @@ public class UIShopSideMenu : MonoBehaviour, Unity.VisualScripting.IInitializabl
         _deliveryRequestCooldownCor = null;
     }
 
-    private void HandleDayCycleChange(OnDayStateChangeEvent eventData)
-    {
-        if(eventData.isDay == true)
-        {
-            _deliveryRequestButton.interactable = true;
-            _deliveryRequestButtonText.text = _defaultButtonText;
-            _dayState = true;
-            return;
-        }
-        
-        if(_deliveryRequestCooldownCor != null)
-        {
-            StopCoroutine(_deliveryRequestCooldownCor);
-            _deliveryRequestCooldownCor = null;
-        }
+    #endregion
 
-        _dayState = false;
-        _deliveryRequestButton.interactable = false;
-        _deliveryRequestButtonText.text = "<i>Возвращайтесь завтра!</i>";
+
+    #region Unity Methods
+
+    private void OnDisable()
+    {
+        EventBus<DeliveryShopOnClickEvent>.Deregister(_onClickEventBinding);
+        EventBus<OnDayStateChangeEvent>.Deregister(_onDayStateChangeBinding);
+
+        _onClickEventBinding = null;
     }
+
+    #endregion
 }

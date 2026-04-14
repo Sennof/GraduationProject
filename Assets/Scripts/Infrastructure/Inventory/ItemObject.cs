@@ -3,53 +3,58 @@ using UnityEngine;
 
 public class ItemObject : MonoBehaviour, IInitializable
 {
-    #region Data Settings
+    #region Fields
+
     [Header("Main Metadata")]
+    [Tooltip("Associated product data.")]
     [SerializeField] private ProductData _productData;
+    [Tooltip("Type of interactable object.")]
     [SerializeField] private InteractableObjectTypeEnum _type;
+    [Tooltip("Size category of the object.")]
     [SerializeField] private ObjectSizeEnum _size;
+    [Tooltip("Icon displayed in UI.")]
     [SerializeField] private Sprite _icon;
-    #endregion
 
     [Space(10)]
 
-    #region Physics Settings
     [Header("Physics Components")]
+    [Tooltip("Layer mask to exclude when held.")]
     [SerializeField] private LayerMask _layerMask;
+    [Tooltip("Rigidbody component.")]
     [SerializeField] private Rigidbody _rigidbody;
+    [Tooltip("Collider component.")]
     [SerializeField] private Collider _collider;
-    #endregion
 
     [Space(10)]
 
-    #region Hierarchy Settings
     [Header("Placement")]
+    [Tooltip("Default parent transform when dropped.")]
     [SerializeField] private Transform _defaultParent;
-    #endregion
 
     [Space(10)]
 
-    #region Optional Components
     [Header("Optional Modules")]
-
-    [Tooltip("UNNECESSARY (needs to be only if the object has)")]
+    [Tooltip("InteractingObject component if present.")]
     [SerializeField] private InteractingObject _interactingObject;
-
-    [Tooltip("UNNECESSARY (needs to be only if the object has)")]
+    [Tooltip("BuildingObject component if present.")]
     [SerializeField] private BuildingObject _buildingObject;
+
+    private Vector3 _originalScale;
+
     #endregion
 
-    #region Internal State
-    private Vector3 _scale;
-    #endregion
+
+    #region Public Methods
 
     public void Initialize()
     {
-        _scale = transform.localScale;
+        _originalScale = transform.localScale;
         _defaultParent = transform.parent;
 
         if (_buildingObject != null)
+        {
             _buildingObject.Initialize(_defaultParent);
+        }
     }
 
     public void InvokePickUpEvent()
@@ -66,11 +71,11 @@ public class ItemObject : MonoBehaviour, IInitializable
         transform.localPosition = Vector3.zero;
         _rigidbody.isKinematic = true;
         transform.rotation = new Quaternion(0, 0, 0, 0);
-        _collider.excludeLayers = _layerMask; 
-        
+        _collider.excludeLayers = _layerMask;
+
         transform.localScale = new Vector3(transform.localScale.x * 0.75f, transform.localScale.y * 0.75f, transform.localScale.z * 0.75f);
 
-        if(_interactingObject != null)
+        if (_interactingObject != null)
         {
             _interactingObject.SetInHands();
         }
@@ -84,8 +89,8 @@ public class ItemObject : MonoBehaviour, IInitializable
     {
         _rigidbody.isKinematic = false;
         _collider.excludeLayers = 0;
-        _rigidbody.AddForce(-transform.right * _rigidbody.mass * 8, ForceMode.Impulse); //using "-transform.right" beacuse of the rotation of the parent object "hands"
-        transform.localScale = _scale;
+        _rigidbody.AddForce(-transform.right * _rigidbody.mass * 8, ForceMode.Impulse);
+        transform.localScale = _originalScale;
 
         if (_interactingObject != null)
         {
@@ -100,8 +105,8 @@ public class ItemObject : MonoBehaviour, IInitializable
     public void Drop()
     {
         _rigidbody.isKinematic = false;
-        transform.localScale = _scale;
-        transform.position += -transform.right * 0.5f; //using "-transform.right" beacuse of the rotation of the parent object "hands"
+        transform.localScale = _originalScale;
+        transform.position += -transform.right * 0.5f;
         _collider.excludeLayers = 0;
 
         if (_interactingObject != null)
@@ -123,4 +128,6 @@ public class ItemObject : MonoBehaviour, IInitializable
     public ObjectSizeEnum GetSize() => _size;
 
     public InteractableObjectTypeEnum GetObjectType() => _type;
+
+    #endregion
 }

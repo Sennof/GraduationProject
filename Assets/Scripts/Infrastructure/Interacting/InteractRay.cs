@@ -3,59 +3,74 @@ using UnityEngine;
 
 public class InteractRay : MonoBehaviour
 {
+    #region Fields
+
+    [Header("UI")]
+    [Tooltip("Text field to display interaction hints.")]
     [SerializeField] private TMP_Text _hintText;
 
+    [Header("Settings")]
+    [Tooltip("Enable or disable interaction raycasting.")]
     [SerializeField] private bool _enabled = true;
+    [Tooltip("Layers the raycast can hit.")]
     [SerializeField] private LayerMask _layerMask;
-    
-    private GameObject _hit;
+
+    private GameObject _hitObject;
     private RaycastHit _rayHit;
-    private Interactable _target;
+    private Interactable _targetInteractable;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void TurnOff() => _enabled = false;
 
     public void TurnOn() => _enabled = true;
 
-    private void Update()
-    {
-        if (_enabled) Raycasting();
-    }
+    #endregion
+
+
+    #region Private Methods
 
     private void Raycasting()
     {
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out _rayHit, 10, _layerMask))
         {
             Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * _rayHit.distance, Color.yellow);
-            if (_hit != _rayHit.collider.gameObject)
+
+            if (_hitObject != _rayHit.collider.gameObject)
             {
-                _hit = _rayHit.collider.gameObject;
-                _target = _hit.GetComponent<Interactable>();
+                _hitObject = _rayHit.collider.gameObject;
+                _targetInteractable = _hitObject.GetComponent<Interactable>();
             }
 
-            if (_target == null || _hit == null)
+            if (_targetInteractable == null || _hitObject == null)
             {
                 _hintText.text = "";
                 return;
             }
 
-            Debug.Log($"hitted: {_hit.name} | InteractRay");
+            Debug.Log($"Hitted: {_hitObject.name} | InteractRay");
 
-            if (_target.GetActiveState() & _target.GetActingDistance() >= _rayHit.distance)
+            if (_targetInteractable.GetActiveState() && _targetInteractable.GetActingDistance() >= _rayHit.distance)
             {
-                bool usingSideEvents = _target.GetStateUsingSideEvents();
-                //think about stopping using hints. better add a global HUD
+                bool usingSideEvents = _targetInteractable.GetStateUsingSideEvents();
 
-                _hintText.text = $"ֽאזלטעו: {_target.GetMainTriggerKey()}";
-                if (usingSideEvents) _hintText.text += $" ({_target.GetSideTriggerKey()})";
-
-                if (Input.GetKeyDown(_target.GetMainTriggerKey()))
+                _hintText.text = $"Press: {_targetInteractable.GetMainTriggerKey()}";
+                if (usingSideEvents)
                 {
-                    _target.InvokeMainActions();
+                    _hintText.text += $" ({_targetInteractable.GetSideTriggerKey()})";
                 }
-                
-                if(usingSideEvents && Input.GetKeyDown(_target.GetSideTriggerKey()))
+
+                if (Input.GetKeyDown(_targetInteractable.GetMainTriggerKey()))
                 {
-                    _target.InvokeSideActions();
+                    _targetInteractable.InvokeMainActions();
+                }
+
+                if (usingSideEvents && Input.GetKeyDown(_targetInteractable.GetSideTriggerKey()))
+                {
+                    _targetInteractable.InvokeSideActions();
                 }
             }
             else
@@ -69,4 +84,18 @@ public class InteractRay : MonoBehaviour
         }
     }
 
+    #endregion
+
+
+    #region Unity Methods
+
+    private void Update()
+    {
+        if (_enabled)
+        {
+            Raycasting();
+        }
+    }
+
+    #endregion
 }

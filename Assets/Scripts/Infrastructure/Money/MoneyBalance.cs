@@ -2,28 +2,31 @@ using UnityEngine;
 
 public class MoneyBalance : MonoBehaviour, IMoneyBalance
 {
+    #region Fields
+
+    [Header("Configuration")]
+    [Tooltip("Settings configuration asset.")]
     [SerializeField] private SettingsConfigurationSO _settings;
+
+    [Header("UI")]
+    [Tooltip("UI component displaying money balance.")]
     [SerializeField] private UIMoneyBalance _ui;
 
+    [Header("Cheats")]
+    [Tooltip("Key to add cheat money.")]
     [SerializeField] private KeyCode _cheatingKeyCode = KeyCode.M;
+    [Tooltip("Amount added per cheat press.")]
     [SerializeField] private int _cheatingAmount = 10;
 
     private int _moneyAmount = 0;
 
-    private void Update()
-    {
-        if (!_settings.IsCheatsEnabled)
-            return;
+    #endregion
 
-        if (Input.GetKeyDown(_cheatingKeyCode))
-        {
-            AddMoney(_cheatingAmount, "DebugCheats");
-        }
-    }
+
+    #region Public Methods
 
     public void Initialize(int moneyAmount)
     {
-        //SAVINGSYS (probaply just get from GameData)
         _moneyAmount = moneyAmount;
         _ui.SetMoneyUI(moneyAmount);
     }
@@ -57,4 +60,24 @@ public class MoneyBalance : MonoBehaviour, IMoneyBalance
     }
 
     public int GetMoney() => _moneyAmount;
+
+    #endregion
+
+
+    #region Unity Methods
+
+    private void Update()
+    {
+        if (!_settings.IsCheatsEnabled)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(_cheatingKeyCode))
+        {
+            AddMoney(_cheatingAmount, "DebugCheats");
+        }
+    }
+
+    #endregion
 }

@@ -7,18 +7,22 @@ using UnityEngine.AI;
 public class AICustomer : MonoBehaviour
 {
     #region Fields
+
     [Header("Movement Settings")]
+    [Tooltip("Time the agent stops at each waypoint to simulate browsing.")]
     [SerializeField] private float _stopDuration = 3.0f;
-    [SerializeField] private float _minDistance = 0.5f;
+    [Tooltip("Distance at which the agent considers it has reached a destination.")]
+    [SerializeField] private float _minReachDistance = 0.5f;
 
     [Header("State")]
-    private NavMeshAgent _agent;
-    private NavMeshObstacle _obstacle;
+    private NavMeshAgent _navMeshAgent;
+    private NavMeshObstacle _navMeshObstacle;
     private Vector3[] _destinations;
     private int _currentDestinationIndex = 0;
-    private Coroutine _logicCor = null;
+    private Coroutine _logicCoroutine;
     private CustomerState _state = CustomerState.Shopping;
     private AIAgentsManager _manager;
+    [Tooltip("Products the customer intends to buy.")]
     public GameObject[] _products;
 
     private enum CustomerState
@@ -27,20 +31,26 @@ public class AICustomer : MonoBehaviour
         WaitingInQueue,
         Exiting
     }
+
     #endregion
+
 
     #region Unity Methods
+
     private void Awake()
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _obstacle = GetComponent<NavMeshObstacle>();
-        _agent.stoppingDistance = _minDistance;
-        _obstacle.enabled = false;
-        _obstacle.carving = true;
+        _navMeshAgent = GetComponent<NavMeshAgent>();
+        _navMeshObstacle = GetComponent<NavMeshObstacle>();
+        _navMeshAgent.stoppingDistance = _minReachDistance;
+        _navMeshObstacle.enabled = false;
+        _navMeshObstacle.carving = true;
     }
+
     #endregion
 
+
     #region Public Methods
+
     public void Initialize(Vector3[] destinations, GameObject[] products, AIAgentsManager manager)
     {
         _products = products;
@@ -49,10 +59,12 @@ public class AICustomer : MonoBehaviour
         _currentDestinationIndex = 0;
         _state = CustomerState.Shopping;
 
-        if (_logicCor != null)
-            StopCoroutine(_logicCor);
+        if (_logicCoroutine != null)
+        {
+            StopCoroutine(_logicCoroutine);
+        }
 
-        _logicCor = StartCoroutine(FollowDestinationsRoutine());
+        _logicCoroutine = StartCoroutine(FollowDestinationsRoutine());
         GlobalStatsBridge.Instance.AddTotalVisitors();
     }
 
@@ -60,10 +72,12 @@ public class AICustomer : MonoBehaviour
     {
         _state = CustomerState.WaitingInQueue;
 
-        if (_logicCor != null)
-            StopCoroutine(_logicCor);
+        if (_logicCoroutine != null)
+        {
+            StopCoroutine(_logicCoroutine);
+        }
 
-        _logicCor = StartCoroutine(MoveToPointAndStationary(newPoint));
+        _logicCoroutine = StartCoroutine(MoveToPointAndStationary(newPoint));
     }
 
     public void ReleaseFromQueue(Vector3 exitPoint)
@@ -72,18 +86,65 @@ public class AICustomer : MonoBehaviour
         _destinations = new Vector3[] { exitPoint };
         _currentDestinationIndex = 0;
 
-        if (_logicCor != null)
-            StopCoroutine(_logicCor);
+        if (_logicCoroutine != null)
+        {
+            StopCoroutine(_logicCoroutine);
+        }
 
-        _logicCor = StartCoroutine(FollowDestinationsRoutine());
+        _logicCoroutine = StartCoroutine(FollowDestinationsRoutine());
     }
 
-    public float GetMinReachDistance() => _minDistance;
+    public float GetMinReachDistance() => _minReachDistance;
 
     public GameObject[] GetProducts() => _products;
+
     #endregion
 
-    #region Internal Logic
+
+    #region Movement Logic
+
+    private void SetNavigationMode(bool isMoving)
+    {
+        if (isMoving)
+        {
+            _navMeshObstacle.enabled = false;
+            _navMeshAgent.enabled = true;
+        }
+        else
+        {
+            if (_navMeshAgent.enabled)
+            {
+                _navMeshAgent.isStopped = true;
+            }
+
+            _navMeshAgent.enabled = false;
+            _navMeshObstacle.enabled = true;
+        }
+    }
+
+    private IEnumerator MoveToPoint(Vector3 point)
+    {
+        SetNavigationMode(true);
+        _navMeshAgent.ResetPath();
+        yield return null;
+
+        if (_navMeshAgent.isOnNavMesh)
+        {
+            _navMeshAgent.SetDestination(point);
+            _navMeshAgent.isStopped = false;
+
+            yield return new WaitUntil(() => _navMeshAgent.pathPending || _navMeshAgent.remainingDistance > 0.1f);
+            yield return new WaitUntil(() => !_navMeshAgent.pathPending && _navMeshAgent.remainingDistance <= _navMeshAgent.stoppingDistance + 0.1f);
+            yield return new WaitUntil(() => _navMeshAgent.velocity.sqrMagnitude < 0.01f);
+        }
+    }
+
+    private IEnumerator MoveToPointAndStationary(Vector3 point)
+    {
+        yield return StartCoroutine(MoveToPoint(point));
+        SetNavigationMode(false);
+    }
+
     private IEnumerator FollowDestinationsRoutine()
     {
         while (_currentDestinationIndex < _destinations.Length)
@@ -106,45 +167,6 @@ public class AICustomer : MonoBehaviour
         }
     }
 
-    private IEnumerator MoveToPointAndStationary(Vector3 point)
-    {
-        yield return StartCoroutine(MoveToPoint(point));
-        SetNavigationMode(false);
-    }
-
-    private IEnumerator MoveToPoint(Vector3 point)
-    {
-        SetNavigationMode(true);
-        _agent.ResetPath();
-        yield return null;
-
-        if (_agent.isOnNavMesh)
-        {
-            _agent.SetDestination(point);
-            _agent.isStopped = false;
-
-            yield return new WaitUntil(() => _agent.pathPending || _agent.remainingDistance > 0.1f);
-            yield return new WaitUntil(() => !_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance + 0.1f);
-            yield return new WaitUntil(() => _agent.velocity.sqrMagnitude < 0.01f);
-        }
-    }
-
-    private void SetNavigationMode(bool isMoving)
-    {
-        if (isMoving)
-        {
-            _obstacle.enabled = false;
-            _agent.enabled = true;
-        }
-        else
-        {
-            if (_agent.enabled)
-                _agent.isStopped = true;
-
-            _agent.enabled = false;
-            _obstacle.enabled = true;
-        }
-    }
     #endregion
 }
 #endregion

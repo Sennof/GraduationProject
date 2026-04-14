@@ -4,23 +4,34 @@ using UnityEngine;
 
 public class EntryPoint : BaseEntryPoint
 {
-    public static EntryPoint Instance { get; private set; }
+    #region Fields
 
     [Header("Dependencies")]
+    [Tooltip("Default raycast start point for interactions.")]
     [SerializeField] private Transform _defaultRaycastStartPoint;
+    [Tooltip("Money balance component.")]
     [SerializeField] private MoneyBalance _moneyBalance;
 
-    // This script is used for initialization.
-    // Here are all the awake and start methods. 
-    private void Awake() // EARLY INITIALIZATION 
-    {
-        //SINGLETON
-        if (Instance != null && Instance != this) Destroy(this);
-        else Instance = this;
+    public static EntryPoint Instance { get; private set; }
 
-        //CORE BELOW
+    #endregion
+
+
+    #region Unity Methods
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+
         InitializeAll<GlobalStatsBridge>();
-        _moneyBalance.Initialize(1000 /*saving blyat*/);
+        _moneyBalance.Initialize(1000);
         InitializeAll<RatingManager>();
 
         InitializeAll<ShelfInitializer>();
@@ -47,7 +58,6 @@ public class EntryPoint : BaseEntryPoint
         InitializeAll<BuildingWrench>();
         InitializeAll<BuildedObject>();
 
-        //UI BELOW
         InitializeAll<UIVersionSetter>();
 
         InitializeAll<UIPricing>();
@@ -58,55 +68,57 @@ public class EntryPoint : BaseEntryPoint
 
         InitializeAll<DeliveryAnimationHandler>();
 
-        //UI BELOW DELETE LATER (rewrite)
         InitializeAll<UIWorkerCard>();
     }
 
-    private void Start() // LATE INITIALIZATION
+    private void Start()
     {
         InitializeAll<DayCycleManager>();
         InitializeAll<ShopStateTablet>();
-
     }
 
     private void OnDisable()
     {
-        StopAllCoroutines();   
+        StopAllCoroutines();
     }
 
-    #region Special
+    #endregion
+
+
+    #region Special Initialization
+
     public void InitializeInteractingObjects()
     {
         string totalLog = string.Empty;
 
-        InteractingObject[] objs = GameObject.FindObjectsByType<InteractingObject>(FindObjectsInactive.Include, 0);
-        if (objs == null || objs.Length == 0)
+        InteractingObject[] objects = GameObject.FindObjectsByType<InteractingObject>(FindObjectsInactive.Include, 0);
+        if (objects == null || objects.Length == 0)
         {
             Debug.LogWarning($"No objects of type {typeof(InteractingObject).Name} found");
             return;
         }
 
-        int success = 0, fail = 0;
-        foreach (var obj in objs)
+        int successCount = 0;
+        int failCount = 0;
+        foreach (var obj in objects)
         {
             try
             {
                 obj.Initialize(_defaultRaycastStartPoint);
-                success++;
-                totalLog += $"({success + fail}) Successfully initialized: {obj.name} | typeof {typeof(InteractingObject).Name}\n";
+                successCount++;
+                totalLog += $"({successCount + failCount}) Successfully initialized: {obj.name} | typeof {typeof(InteractingObject).Name}\n";
             }
             catch (Exception ex)
             {
                 Debug.LogError($"Failed to initialize {obj.gameObject.name}: {ex}");
-                fail++;
-                totalLog += $"({success + fail}) Failed to initialize: {obj.name} | typeof {typeof(InteractingObject).Name}\n";
+                failCount++;
+                totalLog += $"({successCount + failCount}) Failed to initialize: {obj.name} | typeof {typeof(InteractingObject).Name}\n";
             }
         }
 
-        totalLog += $"Initialized {success} {typeof(InteractingObject).Name}(s), failed {fail}";
+        totalLog += $"Initialized {successCount} {typeof(InteractingObject).Name}(s), failed {failCount}";
         Debug.Log("[TOTAL INIT LOG]\n" + totalLog);
     }
-    #endregion
 
-    
+    #endregion
 }

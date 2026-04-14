@@ -1,4 +1,4 @@
-public enum SreenResolutionEnum
+public enum ScreenResolutionEnum
 {
     Unknown = -1,
     Res_800x600 = 0,

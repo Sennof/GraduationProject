@@ -4,10 +4,12 @@ using UnityEngine;
 public class InGameBaseData : UIBaseData
 {
     [Header("InGame Base")]
-    [Tooltip("When spawning an object it is used")]
+    [Tooltip("Prefab used when spawning the object.")]
     public GameObject Prefab;
-    [Tooltip("The name of spawned object")]
+
+    [Tooltip("Name of the spawned object.")]
     public string ObjectName;
-    [Tooltip("The size of an object")]
+
+    [Tooltip("Size category of the object.")]
     public ObjectSizeEnum Size;
 }

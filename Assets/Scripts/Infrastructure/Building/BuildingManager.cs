@@ -3,26 +3,36 @@ using UnityEngine;
 
 public class BuildingManager : MonoBehaviour, IInitializeable
 {
-    #region Serialized Fields
+    #region Fields
+
     [Header("Settings")]
+    [Tooltip("Global toggle enabling building functionality.")]
     [SerializeField] private bool _canBuilding = false;
+    [Tooltip("Grid size for snapping placed objects.")]
     [SerializeField] private float _snapGridSize = 0.25f;
+    [Tooltip("Distance of the placement raycast.")]
     [SerializeField] private float _raycastDistance = 6f;
+    [Tooltip("Layer mask for the placement raycast.")]
     [SerializeField] private LayerMask _raycastLayerMask;
 
     [Header("References")]
+    [Tooltip("UI panel for building mode hints.")]
     [SerializeField] private UIBuildingMode _uiBuildingMode;
+    [Tooltip("Player inventory reference.")]
     [SerializeField] private Inventory _inventory;
+    [Tooltip("Starting point of the placement raycast.")]
     [SerializeField] private Transform _raycastStartPoint;
+    [Tooltip("Parent transform for instantiated buildings.")]
     [SerializeField] private Transform _targetFolder;
 
     [Header("Controls")]
+    [Tooltip("Key to toggle building mode.")]
     [SerializeField] private KeyCode _buildingModeKeyCode = KeyCode.B;
+    [Tooltip("Key to rotate the preview object.")]
     [SerializeField] private KeyCode _rotationKeyCode = KeyCode.R;
+    [Tooltip("Key to confirm placement.")]
     [SerializeField] private KeyCode _buildKeyCode = KeyCode.Mouse0;
-    #endregion
 
-    #region Private Variables
     private bool _isBuilding = false;
     private GameObject _targetObjectPrefab;
     private GameObject _targetObject;
@@ -31,7 +41,7 @@ public class BuildingManager : MonoBehaviour, IInitializeable
     private BuildingObject _buildingObject;
     private BuildedObject _buildedObject;
 
-    private List<BuildedObject> _buildedObjectBuilderColliders = new();
+    private List<BuildedObject> _buildedObjectColliders = new();
 
     private RaycastHit _rayHit;
     private EventBinding<BuildingModeTriggerEvent> _buildingModeTriggerBinding;
@@ -39,9 +49,12 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
     private Vector3 _lastCalculatedPosition;
     private bool _isFirstPlacementAttempt = true;
+
     #endregion
 
-    #region Core
+
+    #region Public Methods
+
     public void Initialize()
     {
         ResetData();
@@ -56,43 +69,69 @@ public class BuildingManager : MonoBehaviour, IInitializeable
         _uiBuildingMode.Initialize(_buildingModeKeyCode, _rotationKeyCode, _buildKeyCode);
     }
 
+    #endregion
+
+
+    #region Unity Methods
+
     private void OnDisable()
     {
-        if (_isBuilding) TurnOffBuildMode();
+        if (_isBuilding)
+        {
+            TurnOffBuildMode();
+        }
         EventBus<BuildingModeTriggerEvent>.Deregister(_buildingModeTriggerBinding);
         EventBus<RemoveBuildingEvent>.Deregister(_removeBuildingBinding);
     }
 
     private void Update()
     {
-        if (GlobalStatsBridge.Instance.GetShopOpenClosed()) return;
-        if (!_canBuilding) return;
+        if (GlobalStatsBridge.Instance.GetShopOpenClosed())
+        {
+            return;
+        }
+        if (!_canBuilding)
+        {
+            return;
+        }
 
         if (Input.GetKeyDown(_buildingModeKeyCode))
+        {
             BuildingProcessTrigger();
+        }
 
         if (_isBuilding)
+        {
             HandleBuildingInput();
+        }
     }
 
-    //part of initialization
+    #endregion
+
+
+    #region Building Logic
+
     private void GetBuildingColliders()
     {
-        _buildedObjectBuilderColliders.Clear();
+        _buildedObjectColliders.Clear();
 
-        BuildedObject[] buildedObjs = GameObject.FindObjectsByType<BuildedObject>(0);
-        foreach(BuildedObject obj in buildedObjs)
+        BuildedObject[] buildedObjects = GameObject.FindObjectsByType<BuildedObject>(0);
+        foreach (BuildedObject obj in buildedObjects)
         {
-            _buildedObjectBuilderColliders.Add(obj);
+            _buildedObjectColliders.Add(obj);
         }
     }
 
     private void HandleBuildingInput()
     {
         if (Input.GetKeyDown(_rotationKeyCode))
+        {
             RotateObject();
+        }
         if (Input.GetKeyDown(_buildKeyCode))
+        {
             Build();
+        }
 
         if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0 || _isFirstPlacementAttempt || _targetObject == null)
         {
@@ -115,15 +154,16 @@ public class BuildingManager : MonoBehaviour, IInitializeable
         _targetObjectTransform = null;
         _isFirstPlacementAttempt = true;
     }
-    #endregion
 
-    #region Building Logic
     private void BuildingProcessTrigger()
     {
         ItemObject itemObj = _inventory.GetCurrentItemManager();
         if (itemObj == null || itemObj.GetObjectType() != InteractableObjectTypeEnum.UnbuildedObj)
         {
-            if (_isBuilding) TurnOffBuildMode();
+            if (_isBuilding)
+            {
+                TurnOffBuildMode();
+            }
             return;
         }
 
@@ -176,12 +216,19 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
     private void TurnOffBuildMode()
     {
-        if (_targetObject != null) Destroy(_targetObject);
+        if (_targetObject != null)
+        {
+            Destroy(_targetObject);
+        }
 
         if (_buildingObject.GetAmount() == 0)
+        {
             _uiBuildingMode.TurnOffUI();
+        }
         else
+        {
             _uiBuildingMode.SetUI(0, -1);
+        }
 
         _buildedObject.DisableBuilding();
 
@@ -195,21 +242,32 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
     private void Build()
     {
-        if (_targetObject == null) return;
+        if (_targetObject == null)
+        {
+            return;
+        }
 
-        if (_buildedObject.CheckPlace() == false) return;
+        if (_buildedObject.CheckPlace() == false)
+        {
+            return;
+        }
 
         _buildingObject.DecreaseAmount();
 
-        if (_targetObjectCollider != null) _targetObjectCollider.enabled = true;
+        if (_targetObjectCollider != null)
+        {
+            _targetObjectCollider.enabled = true;
+        }
         _targetObject.layer = 0;
         _targetObject = null;
 
         _buildedObject.Initialize();
-        _buildedObjectBuilderColliders.Add(_buildedObject);
+        _buildedObjectColliders.Add(_buildedObject);
 
         if (_buildingObject.GetAmount() == 0)
+        {
             _inventory.DestroySlot();
+        }
 
         _buildedObject.SetBuildedState();
         TurnOffBuildMode();
@@ -217,12 +275,12 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
     private void RemoveBuilding(RemoveBuildingEvent eventData)
     {
-        for (int i = _buildedObjectBuilderColliders.Count - 1; i >= 0; i--)
+        for (int i = _buildedObjectColliders.Count - 1; i >= 0; i--)
         {
-            if (_buildedObjectBuilderColliders[i].GetMe() == eventData.Target)
+            if (_buildedObjectColliders[i].GetMe() == eventData.Target)
             {
-                BuildedObject objToRemove = _buildedObjectBuilderColliders[i];
-                _buildedObjectBuilderColliders.RemoveAt(i);
+                BuildedObject objToRemove = _buildedObjectColliders[i];
+                _buildedObjectColliders.RemoveAt(i);
                 Destroy(objToRemove.gameObject);
                 break;
             }
@@ -233,7 +291,10 @@ public class BuildingManager : MonoBehaviour, IInitializeable
     {
         position = Vector3.zero;
 
-        if (_raycastStartPoint == null) return false;
+        if (_raycastStartPoint == null)
+        {
+            return false;
+        }
 
         if (Physics.Raycast(_raycastStartPoint.position, _raycastStartPoint.forward, out _rayHit, _raycastDistance, _raycastLayerMask))
         {
@@ -244,7 +305,7 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
                 Vector3 snappedPosition = new Vector3(snappedX, _rayHit.point.y, snappedZ);
 
-                if (_isFirstPlacementAttempt || Vector3.Distance(_lastCalculatedPosition, snappedPosition) > 0.001f) // ֿמנמד ג 1 לל
+                if (_isFirstPlacementAttempt || Vector3.Distance(_lastCalculatedPosition, snappedPosition) > 0.001f)
                 {
                     _lastCalculatedPosition = snappedPosition;
                     position = snappedPosition;
@@ -257,23 +318,30 @@ public class BuildingManager : MonoBehaviour, IInitializeable
 
     private void SetStateBuildingBarrierObjects(bool state)
     {
-        if(_buildedObjectBuilderColliders != null && _buildedObjectBuilderColliders.Count > 0)
+        if (_buildedObjectColliders != null && _buildedObjectColliders.Count > 0)
         {
-            foreach(BuildedObject obj in _buildedObjectBuilderColliders)
+            foreach (BuildedObject obj in _buildedObjectColliders)
             {
                 if (state)
+                {
                     obj.SetActive();
+                }
                 else
+                {
                     obj.SetInactive();
+                }
             }
         }
     }
 
     private void UpdateObjectPosition(Vector3 basePos)
     {
-        if (_targetObjectTransform == null || _targetObjectCollider == null) return;
+        if (_targetObjectTransform == null || _targetObjectCollider == null)
+        {
+            return;
+        }
 
-        float halfHeight = (_targetObjectCollider.size.y * _targetObjectTransform.localScale.y) * 0.5f; ; 
+        float halfHeight = (_targetObjectCollider.size.y * _targetObjectTransform.localScale.y) * 0.5f;
         float yPos = halfHeight - (_targetObjectCollider.center.y * _targetObjectTransform.localScale.y);
 
         _targetObjectTransform.position = new Vector3(basePos.x, yPos, basePos.z);
@@ -282,20 +350,32 @@ public class BuildingManager : MonoBehaviour, IInitializeable
     private void RotateObject()
     {
         if (_targetObjectTransform != null)
+        {
             _targetObjectTransform.Rotate(0, 90, 0);
+        }
     }
+
     #endregion
 
-    #region Event handlers
+
+    #region Event Handlers
+
     private void HandleBuildingModeTrigger(BuildingModeTriggerEvent eventData)
     {
-        //earlier there was a logic with pushing some parent data through event though now it is forbidden
         if (eventData.TargetFolder != null)
+        {
             _canBuilding = true;
+        }
         else
+        {
             _canBuilding = false;
+        }
 
-        if (!_canBuilding && _isBuilding) TurnOffBuildMode();
+        if (!_canBuilding && _isBuilding)
+        {
+            TurnOffBuildMode();
+        }
     }
+
     #endregion
 }

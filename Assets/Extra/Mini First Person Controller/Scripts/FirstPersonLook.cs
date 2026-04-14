@@ -2,56 +2,72 @@
 
 public class FirstPersonLook : MonoBehaviour
 {
-    [SerializeField]
-    private bool _enabled = true;
-    [SerializeField]
-    Transform character;
-    public float sensitivity = 2;
-    public float smoothing = 1.5f;
+    #region Fields
 
-    Vector2 velocity;
-    Vector2 frameVelocity;
+    [Header("State")]
+    [Tooltip("Enable or disable mouse look.")]
+    [SerializeField] private bool _enabled = true;
 
-    Vector3 lastRotation = Vector3.zero;
+    [Header("References")]
+    [Tooltip("Character transform to rotate horizontally.")]
+    [SerializeField] private Transform _character;
 
-    void Reset()
+    [Header("Settings")]
+    [Tooltip("Mouse sensitivity.")]
+    public float Sensitivity = 2;
+    [Tooltip("Smoothing factor for mouse input.")]
+    public float Smoothing = 1.5f;
+
+    private Vector2 _velocity;
+    private Vector2 _frameVelocity;
+    private Vector3 _lastRotation = Vector3.zero;
+
+    #endregion
+
+
+    #region Unity Methods
+
+    private void Reset()
     {
-        // Get the character from the FirstPersonMovement in parents.
-        character = GetComponentInParent<FirstPersonMovement>().transform;
+        _character = GetComponentInParent<FirstPersonMovement>().transform;
     }
 
-    void Start()
+    private void Start()
     {
-        // Lock the mouse cursor to the game screen.
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    void Update()
+    private void Update()
     {
         if (_enabled)
         {
-            // Get smooth velocity.
             Vector2 mouseDelta = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
-            Vector2 rawFrameVelocity = Vector2.Scale(mouseDelta, Vector2.one * sensitivity);
-            frameVelocity = Vector2.Lerp(frameVelocity, rawFrameVelocity, 1 / smoothing);
-            velocity += frameVelocity;
-            velocity.y = Mathf.Clamp(velocity.y, -90, 90);
+            Vector2 rawFrameVelocity = Vector2.Scale(mouseDelta, Vector2.one * Sensitivity);
+            _frameVelocity = Vector2.Lerp(_frameVelocity, rawFrameVelocity, 1 / Smoothing);
+            _velocity += _frameVelocity;
+            _velocity.y = Mathf.Clamp(_velocity.y, -90, 90);
 
-            // Rotate camera up-down and controller left-right from velocity.
-            transform.localRotation = Quaternion.AngleAxis(-velocity.y, Vector3.right);
-            character.localRotation = Quaternion.AngleAxis(velocity.x, Vector3.up);
+            transform.localRotation = Quaternion.AngleAxis(-_velocity.y, Vector3.right);
+            _character.localRotation = Quaternion.AngleAxis(_velocity.x, Vector3.up);
         }
         else
         {
-            transform.eulerAngles = lastRotation;
+            transform.eulerAngles = _lastRotation;
         }
     }
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Enable() => _enabled = true;
 
     public void Disable()
     {
         _enabled = false;
-        lastRotation = transform.eulerAngles;
+        _lastRotation = transform.eulerAngles;
     }
+
+    #endregion
 }

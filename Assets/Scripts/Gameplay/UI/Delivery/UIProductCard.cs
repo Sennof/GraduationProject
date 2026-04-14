@@ -4,10 +4,20 @@ using UnityEngine.UI;
 
 public class UIProductCard : MonoBehaviour
 {
+    #region Fields
+
+    [Header("UI Elements")]
+    [Tooltip("Text for product title.")]
     [SerializeField] private TMP_Text _titleText;
+    [Tooltip("Image for product icon.")]
     [SerializeField] private Image _iconImage;
 
     private ProductData _productData;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Initialize(ProductData data)
     {
@@ -19,7 +29,8 @@ public class UIProductCard : MonoBehaviour
 
     public void OnClick()
     {
-        //Invoke an event(create it) for showing side menu information in shop
-        EventBus<DeliveryShopOnClickEvent>.Raise(new DeliveryShopOnClickEvent {ProductData = _productData});
+        EventBus<DeliveryShopOnClickEvent>.Raise(new DeliveryShopOnClickEvent { ProductData = _productData });
     }
+
+    #endregion
 }

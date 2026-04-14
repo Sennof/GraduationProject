@@ -3,16 +3,32 @@ using UnityEngine;
 
 public class SunAngleSetter : MonoBehaviour
 {
+    #region Fields
+
+    [Header("References")]
+    [Tooltip("Transform of the sun.")]
     [SerializeField] private Transform _sun;
+
     [Space(15)]
-    [SerializeField] private Vector3 _defaultAngle; 
+    [Header("Angles")]
+    [Tooltip("Default sun rotation (sunrise).")]
+    [SerializeField] private Vector3 _defaultAngle;
+    [Tooltip("Sunset sun rotation.")]
     [SerializeField] private Vector3 _sunsetAngle;
+
     [Space(15)]
+    [Header("Animation")]
+    [Tooltip("Number of steps for sunset transition.")]
     [SerializeField] private int _rotationSteps = 100;
-    [Tooltip("in miliseconds")]
+    [Tooltip("Cooldown between steps in milliseconds.")]
     [SerializeField] private int _cooldown = 10;
 
-    private Coroutine _sunsettingCor = null;
+    private Coroutine _sunsettingCoroutine = null;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Sunrise()
     {
@@ -21,27 +37,34 @@ public class SunAngleSetter : MonoBehaviour
 
     public void Sunset()
     {
-        if (_sunsettingCor != null)
+        if (_sunsettingCoroutine != null)
         {
-            StopCoroutine(_sunsettingCor);
-            _sunsettingCor = null;
+            StopCoroutine(_sunsettingCoroutine);
+            _sunsettingCoroutine = null;
         }
 
-        _sunsettingCor = StartCoroutine(Sunsetting());
+        _sunsettingCoroutine = StartCoroutine(Sunsetting());
     }
+
+    #endregion
+
+
+    #region Coroutines
 
     private IEnumerator Sunsetting()
     {
         int stepsLeft = _rotationSteps;
         Vector3 needToRotate = _sunsetAngle - _sun.eulerAngles;
 
-        while(stepsLeft > 0)
+        while (stepsLeft > 0)
         {
             _sun.eulerAngles += needToRotate / _rotationSteps;
             stepsLeft--;
-            yield return new WaitForSeconds(_cooldown / 100);
+            yield return new WaitForSeconds(_cooldown / 100f);
         }
 
-        _sunsettingCor = null;
+        _sunsettingCoroutine = null;
     }
+
+    #endregion
 }

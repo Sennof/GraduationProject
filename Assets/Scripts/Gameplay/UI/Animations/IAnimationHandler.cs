@@ -4,6 +4,5 @@ using UnityEngine;
 public interface IAnimationHandler
 {
     public void Handle();
-
     public void DeInit();
 }

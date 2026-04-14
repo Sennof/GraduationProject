@@ -1,22 +1,33 @@
 using AYellowpaper.SerializedCollections;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq; 
+using System.Linq;
 using UnityEngine;
 
 public class UIAnimsManager : MonoBehaviour
 {
+    #region Fields
+
+    [Header("References")]
+    [Tooltip("Switcher for animation objects.")]
     [SerializeField] private HomoObjectSwitcher _objectSwitcher;
+
+    [Header("Animations")]
     [SerializedDictionary("Animator", "Animation Clip")]
     [SerializeField] private SerializedDictionary<Animator, AnimationClip> _animations;
 
     private Coroutine[] _cooldownRoutines = new Coroutine[10];
 
+    #endregion
+
+
+    #region Public Methods
+
     public void PlayAnimation(int index)
     {
         if (_animations == null || _animations.Count == 0)
         {
-            Debug.LogWarning("UIAnimsManager: No one animation was found");
+            Debug.LogWarning("UIAnimsManager: No animations found");
             return;
         }
 
@@ -29,22 +40,27 @@ public class UIAnimsManager : MonoBehaviour
         var pair = _animations.ElementAt(index);
         Animator animator = pair.Key;
         AnimationClip animation = pair.Value;
+
         _objectSwitcher.OffAll();
         _objectSwitcher.SetOn(index);
 
         if (animator != null && animation != null)
         {
-            AddToArr(StartCoroutine(AnimCooldownRoutine(animation.length, index)));
+            AddToArray(StartCoroutine(AnimCooldownRoutine(animation.length, index)));
             animator.Play(animation.name);
         }
         else
         {
-            Debug.LogWarning($"UIAnimsManager: Failed to play animation by index({index}) " +
-                             $"\nAnimator: {(animator == null ? "null" : "OK")}, AnimationName: {(string.IsNullOrEmpty(animation.name) ? "null or empty" : animation.name)}");
+            Debug.LogWarning($"UIAnimsManager: Failed to play animation at index({index}). Animator: {(animator == null ? "null" : "OK")}, Clip: {(animation == null ? "null" : animation.name)}");
         }
     }
 
-    private void AddToArr(Coroutine routine)
+    #endregion
+
+
+    #region Private Methods
+
+    private void AddToArray(Coroutine routine)
     {
         for (int i = 0; i < _cooldownRoutines.Length; i++)
         {
@@ -56,10 +72,17 @@ public class UIAnimsManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+
+    #region Coroutines
+
     private IEnumerator AnimCooldownRoutine(float animDuration, int arrId)
     {
         yield return new WaitForSeconds(animDuration);
         _objectSwitcher.OffAll();
         _cooldownRoutines[arrId] = null;
     }
+
+    #endregion
 }

@@ -4,7 +4,10 @@ using UnityEngine;
 public class ProductData : InGameBaseData
 {
     #region ProductData
+
     [Header("ProductData")]
+    [Tooltip("Base price of the product.")]
     public int Price;
+
     #endregion
 }

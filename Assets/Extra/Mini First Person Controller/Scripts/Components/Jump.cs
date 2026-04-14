@@ -2,39 +2,57 @@
 
 public class Jump : MonoBehaviour
 {
-    private bool _enabled = true;
-    Rigidbody rigidbody;
-    public float jumpStrength = 2;
+    #region Fields
+
+    [Header("Settings")]
+    [Tooltip("Strength of the jump impulse.")]
+    public float JumpStrength = 2;
+
+    [Tooltip("Prevents jumping when not grounded.")]
+    [SerializeField] private GroundCheck _groundCheck;
+
     public event System.Action Jumped;
 
-    [SerializeField, Tooltip("Prevents jumping when the transform is in mid-air.")]
-    GroundCheck groundCheck;
+    private bool _enabled = true;
+    private Rigidbody _rigidbody;
+
+    #endregion
 
 
-    void Reset()
+    #region Unity Methods
+
+    private void Reset()
     {
-        // Try to get groundCheck.
-        groundCheck = GetComponentInChildren<GroundCheck>();
+        _groundCheck = GetComponentInChildren<GroundCheck>();
     }
 
-    void Awake()
+    private void Awake()
     {
-        // Get rigidbody.
-        rigidbody = GetComponent<Rigidbody>();
+        _rigidbody = GetComponent<Rigidbody>();
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (!_enabled) return;
-        // Jump when the Jump button is pressed and we are on the ground.
-        if (Input.GetButtonDown("Jump") && (!groundCheck || groundCheck.isGrounded))
+        if (!_enabled)
         {
-            rigidbody.AddForce(Vector3.up * rigidbody.mass * 100 * jumpStrength);
+            return;
+        }
+
+        if (Input.GetButtonDown("Jump") && (!_groundCheck || _groundCheck.IsGrounded))
+        {
+            _rigidbody.AddForce(Vector3.up * _rigidbody.mass * 100 * JumpStrength);
             Jumped?.Invoke();
         }
     }
 
+    #endregion
+
+
+    #region Public Methods
+
     public void SetEnabled() => _enabled = true;
 
     public void SetDisabled() => _enabled = false;
+
+    #endregion
 }

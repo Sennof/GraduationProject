@@ -5,17 +5,30 @@ using Zenject;
 
 public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializable
 {
+    #region Fields
+
+    [Header("Dependencies")]
     [Inject]
+    [Tooltip("Money balance service.")]
     [SerializeField] private IMoneyBalance _moneyBalance;
+
+    [Header("Settings")]
+    [Tooltip("Parent folder for spawned delivery objects.")]
     [SerializeField] private Transform _folder;
+    [Tooltip("Cooldown between spawning multiple items.")]
     [SerializeField] private float _spawnCooldown = 1f;
 
     private List<GameObject> _generatedObjects = new();
     private EventBinding<DeliveryRequestingEvent> _eventBinding;
-    private Coroutine _spawningObjectsCor = null;
+    private Coroutine _spawningObjectsCoroutine = null;
 
-    private int _spawnColumns = 3;
-    private int _spawnRows = 4;
+    private const int SpawnColumns = 3;
+    private const int SpawnRows = 4;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Initialize()
     {
@@ -23,10 +36,10 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
         EventBus<DeliveryRequestingEvent>.Register(_eventBinding);
     }
 
-    private void OnDisable()
-    {
-        EventBus<DeliveryRequestingEvent>.Deregister(_eventBinding);
-    }
+    #endregion
+
+
+    #region Private Methods
 
     private void HandleDeliveryRequest(DeliveryRequestingEvent eventData)
     {
@@ -38,19 +51,19 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
             return;
         }
 
-        EventBus<DeliveryResponseEvent>.Raise(new DeliveryResponseEvent { isSuccess = true});
-        _moneyBalance.RemoveMoney(eventData.ProductData.Price * eventData.Amount, $"Доставка({eventData.Amount}шт.) {eventData.ProductData.TitleName} {eventData.ProductData.Price * eventData.Amount}");
+        EventBus<DeliveryResponseEvent>.Raise(new DeliveryResponseEvent { IsSuccess = true });
+        _moneyBalance.RemoveMoney(eventData.ProductData.Price * eventData.Amount, $"Delivery({eventData.Amount} pcs) {eventData.ProductData.TitleName}");
         GlobalStatsBridge.Instance.AddTotalDeliveries();
 
         if (eventData.Amount > 1)
         {
-            if(_spawningObjectsCor != null)
+            if (_spawningObjectsCoroutine != null)
             {
-                StopCoroutine( _spawningObjectsCor );
-                _spawningObjectsCor = null;
+                StopCoroutine(_spawningObjectsCoroutine);
+                _spawningObjectsCoroutine = null;
             }
 
-            _spawningObjectsCor = StartCoroutine(SpawningObjects(eventData));
+            _spawningObjectsCoroutine = StartCoroutine(SpawningObjects(eventData));
         }
         else
         {
@@ -60,13 +73,13 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
         }
     }
 
-    private void SpawnObject(ProductData _data, int id, Vector3 pos)
+    private void SpawnObject(ProductData data, int id, Vector3 position)
     {
-        GameObject obj = Instantiate(_data.Prefab);
+        GameObject obj = Instantiate(data.Prefab);
         obj.transform.SetParent(_folder);
-        obj.transform.localPosition = pos;
+        obj.transform.localPosition = position;
 
-        obj.name = obj.name + " " + _data.ObjectName + " " + id;
+        obj.name = obj.name + " " + data.ObjectName + " " + id;
         obj.SetActive(true);
 
         _generatedObjects.Add(obj);
@@ -87,6 +100,20 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
         _generatedObjects = new();
     }
 
+    private Vector3 CalculatePosition(int totalIndex, float xSize, float zSize)
+    {
+        int xPos = totalIndex % SpawnColumns;
+        int zPos = (totalIndex / SpawnColumns) % SpawnRows;
+        int yPos = totalIndex / (SpawnColumns * SpawnRows);
+        Vector3 targetPos = new Vector3(xPos * xSize, yPos, zPos * zSize);
+        return targetPos;
+    }
+
+    #endregion
+
+
+    #region Coroutines
+
     private IEnumerator SpawningObjects(DeliveryRequestingEvent eventData)
     {
         float x = eventData.ProductData.Prefab.transform.localScale.x;
@@ -96,7 +123,7 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
 
         for (int i = 0; i < eventData.Amount; i++)
         {
-            SpawnObject(eventData.ProductData, i + 1, CalcPosition(preGenerated + i, x, z));
+            SpawnObject(eventData.ProductData, i + 1, CalculatePosition(preGenerated + i, x, z));
             InitializeObjectData(i);
             InitializePackedObjectLayout(i, eventData.ProductData.Icon);
 
@@ -106,12 +133,15 @@ public class DeliveryManager : MonoBehaviour, Unity.VisualScripting.IInitializab
         ResetData();
     }
 
-    private Vector3 CalcPosition(int totalIndex, float x, float z)
+    #endregion
+
+
+    #region Unity Methods
+
+    private void OnDisable()
     {
-        int xPos = totalIndex % _spawnColumns;
-        int zPos = (totalIndex / _spawnColumns) % _spawnRows;
-        int yPos = totalIndex / (_spawnColumns * _spawnRows);
-        Vector3 targetPos = new Vector3(xPos * x, yPos, zPos * z);
-        return targetPos;
+        EventBus<DeliveryRequestingEvent>.Deregister(_eventBinding);
     }
+
+    #endregion
 }

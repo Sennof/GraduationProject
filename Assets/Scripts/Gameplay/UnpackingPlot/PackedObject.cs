@@ -2,33 +2,49 @@ using DG.Tweening;
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent (typeof(Interactable), typeof(ItemObject))]
+[RequireComponent(typeof(Interactable), typeof(ItemObject))]
 public class PackedObject : MonoBehaviour
 {
-    [SerializeField] private GameObject _unpackedObjectPrefab;
-    private GameObject _unpackedObject;
+    #region Fields
 
-    private Coroutine _unpackingCor = null;
+    [Header("Settings")]
+    [Tooltip("Prefab to instantiate when unpacked.")]
+    [SerializeField] private GameObject _unpackedObjectPrefab;
+
+    private GameObject _unpackedObject;
+    private Coroutine _unpackingCoroutine = null;
+
+    #endregion
+
+
+    #region Public Methods
+
     public void Initialize()
     {
-
     }
 
     public void UnpackObject()
     {
-        if(_unpackingCor != null)
+        if (_unpackingCoroutine != null)
         {
-            StopCoroutine(_unpackingCor);
-            _unpackingCor = null;
-        } 
+            StopCoroutine(_unpackingCoroutine);
+            _unpackingCoroutine = null;
+        }
 
-        _unpackingCor = StartCoroutine(UnpackingRoutine());
+        _unpackingCoroutine = StartCoroutine(UnpackingRoutine());
     }
+
+    #endregion
+
+
+    #region Private Methods
 
     private void InitializeInteractingObject()
     {
-       if(_unpackedObject.GetComponent<InteractingObject>()) 
+        if (_unpackedObject.GetComponent<InteractingObject>())
+        {
             EntryPoint.Instance.InitializeInteractingObjects();
+        }
     }
 
     private void InitializeScripts()
@@ -37,9 +53,16 @@ public class PackedObject : MonoBehaviour
         foreach (var script in initScripts)
         {
             if ((Object)script != this)
+            {
                 script.Initialize();
+            }
         }
     }
+
+    #endregion
+
+
+    #region Coroutines
 
     private IEnumerator UnpackingRoutine()
     {
@@ -56,4 +79,6 @@ public class PackedObject : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    #endregion
 }

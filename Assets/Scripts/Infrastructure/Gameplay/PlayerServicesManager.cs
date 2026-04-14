@@ -2,13 +2,26 @@ using UnityEngine;
 
 public class PlayerServicesManager : MonoBehaviour, IInitializeable
 {
+    #region Fields
+
     [Header("Player Components")]
-    [SerializeField] private FirstPersonMovement FirstPersonMovement;
-    [SerializeField] private FirstPersonAudio FirstPersonAudio;
-    [SerializeField] private FirstPersonLook FirstPersonLook;
-    [SerializeField] private Crouch Crouch;
-    [SerializeField] private Jump Jump;
-    [SerializeField] private Zoom Zoom;
+    [Tooltip("First person movement component.")]
+    [SerializeField] private FirstPersonMovement _firstPersonMovement;
+    [Tooltip("First person audio component.")]
+    [SerializeField] private FirstPersonAudio _firstPersonAudio;
+    [Tooltip("First person look component.")]
+    [SerializeField] private FirstPersonLook _firstPersonLook;
+    [Tooltip("Crouch component.")]
+    [SerializeField] private Crouch _crouch;
+    [Tooltip("Jump component.")]
+    [SerializeField] private Jump _jump;
+    [Tooltip("Zoom component.")]
+    [SerializeField] private Zoom _zoom;
+
+    #endregion
+
+
+    #region Public Methods
 
     public void Initialize()
     {
@@ -35,33 +48,39 @@ public class PlayerServicesManager : MonoBehaviour, IInitializeable
 
     public void TurnOffLooking()
     {
-        FirstPersonLook.Disable();
+        _firstPersonLook.Disable();
 
-        if(Zoom != null)
-            Zoom.Disable();
+        if (_zoom != null)
+        {
+            _zoom.Disable();
+        }
     }
 
     public void TurnOnLooking()
     {
-        FirstPersonLook.Enable();
+        _firstPersonLook.Enable();
 
-        if (Zoom != null)
-            Zoom.Enable();
+        if (_zoom != null)
+        {
+            _zoom.Enable();
+        }
     }
 
-    public void TurnOffMovements() => FirstPersonMovement.Disable();
+    public void TurnOffMovements() => _firstPersonMovement.Disable();
 
-    public void TurnOnMovements() => FirstPersonMovement.Enable();
+    public void TurnOnMovements() => _firstPersonMovement.Enable();
 
-    public void TurnOffAudio() => FirstPersonAudio.Disable();
+    public void TurnOffAudio() => _firstPersonAudio.Disable();
 
-    public void TurnOnAudio() => FirstPersonAudio.Enable();
+    public void TurnOnAudio() => _firstPersonAudio.Enable();
 
-    public void TurnOffJumping() => Jump.SetDisabled();
+    public void TurnOffJumping() => _jump.SetDisabled();
 
-    public void TurnOnJumping() => Jump.SetEnabled();
+    public void TurnOnJumping() => _jump.SetEnabled();
 
-    public void TurnOffCrouching() => Crouch.Disable();
+    public void TurnOffCrouching() => _crouch.Disable();
 
-    public void TurnOnCrouching() => Crouch.Enable();
+    public void TurnOnCrouching() => _crouch.Enable();
+
+    #endregion
 }

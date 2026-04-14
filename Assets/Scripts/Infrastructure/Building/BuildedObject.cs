@@ -3,39 +3,41 @@ using UnityEngine;
 
 public class BuildedObject : MonoBehaviour, IInitializeable
 {
+    #region Fields
+
+    [Header("Components")]
+    [Tooltip("Barrier object that visualizes placement collision.")]
     [SerializeField] private GameObject _buildedObjectBarrier;
+    [Tooltip("Renderer of the barrier object.")]
     [SerializeField] private Renderer _buildedObjectBarrierRenderer;
+    [Tooltip("Collider of the barrier object.")]
     [SerializeField] private BoxCollider _buildedObjectBarrierCollider;
+
+    [Header("Placement Settings")]
+    [Tooltip("Layer mask for obstacles that block placement.")]
     [SerializeField] private LayerMask _obstacleMask;
 
     private bool _isBuilding = false;
-    private GameObject _me;
+    private GameObject _self;
 
+    #endregion
+
+
+    #region Public Methods
 
     public void Initialize()
     {
-        _me = gameObject;
+        _self = gameObject;
 
         SetBuildedState();
     }
 
-    private void Update()
-    {
-        if (_isBuilding == false) return;
-
-        if (CheckPlace())
-        {
-            _buildedObjectBarrierRenderer.material.color = Color.green;
-        }
-        else
-        {
-            _buildedObjectBarrierRenderer.material.color = Color.red;
-        }
-    }
-
     public bool CheckPlace()
     {
-        if (_isBuilding == false) return false;
+        if (_isBuilding == false)
+        {
+            return false;
+        }
 
         Transform barrierTransform = _buildedObjectBarrierCollider.transform;
         Vector3 center = barrierTransform.TransformPoint(_buildedObjectBarrierCollider.center);
@@ -48,10 +50,14 @@ public class BuildedObject : MonoBehaviour, IInitializeable
         foreach (var col in collisions)
         {
             if (col.transform.IsChildOf(this.transform))
+            {
                 continue;
+            }
 
             if (col.CompareTag("floor"))
+            {
                 continue;
+            }
 
             return false;
         }
@@ -85,29 +91,61 @@ public class BuildedObject : MonoBehaviour, IInitializeable
 
     public void SetInactive() => _buildedObjectBarrier.SetActive(false);
 
-    public GameObject GetMe() => _me;
+    public GameObject GetMe() => _self;
+
+    #endregion
+
+
+    #region Private Methods
 
     private void InitializeScripts()
     {
         IInitializeable[] initScripts = GetComponents<IInitializeable>();
         foreach (var script in initScripts)
         {
-            if((Object)script != this) 
+            if ((Object)script != this)
+            {
                 script.Initialize();
+            }
+        }
+    }
+
+    #endregion
+
+
+    #region Unity Methods
+
+    private void Update()
+    {
+        if (_isBuilding == false)
+        {
+            return;
+        }
+
+        if (CheckPlace())
+        {
+            _buildedObjectBarrierRenderer.material.color = Color.green;
+        }
+        else
+        {
+            _buildedObjectBarrierRenderer.material.color = Color.red;
         }
     }
 
     private void OnDrawGizmos()
     {
-        if (_buildedObjectBarrierCollider == null) return;
+        if (_buildedObjectBarrierCollider == null)
+        {
+            return;
+        }
 
         Gizmos.color = Color.blue;
         Transform t = _buildedObjectBarrierCollider.transform;
 
-        // Устанавливаем матрицу Gizmos в соответствии с барьером
         Gizmos.matrix = Matrix4x4.TRS(t.TransformPoint(_buildedObjectBarrierCollider.center), t.rotation, t.lossyScale);
 
-        // Рисуем рамку
         Gizmos.DrawWireCube(Vector3.zero, _buildedObjectBarrierCollider.size);
     }
+
+    #endregion
 }

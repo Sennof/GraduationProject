@@ -1,13 +1,15 @@
 using UnityEngine;
-using UnityEngine.Audio;
 using UnityEngine.UI;
 using TMPro;
 
 public class SettingsUIController : MonoBehaviour
 {
     #region Fields
+
     [Header("References")]
+    [Tooltip("Settings configuration asset.")]
     [SerializeField] private SettingsConfigurationSO _settingsSO;
+    [Tooltip("Component that applies settings.")]
     [SerializeField] private SettingsApplier _applier;
 
     [Header("Graphics UI")]
@@ -27,9 +29,12 @@ public class SettingsUIController : MonoBehaviour
     [Header("Special")]
     [SerializeField] private bool _initializingSpecial = true;
     [SerializeField] private Toggle _cheatsToggle;
+
     #endregion
 
+
     #region Unity Methods
+
     private void OnEnable()
     {
         InitializeUIValues();
@@ -40,9 +45,12 @@ public class SettingsUIController : MonoBehaviour
     {
         UnsubscribeFromEvents();
     }
+
     #endregion
 
+
     #region Subscription Logic
+
     private void SubscribeToEvents()
     {
         if (_initializingGraphics)
@@ -62,7 +70,9 @@ public class SettingsUIController : MonoBehaviour
         }
 
         if (_initializingSpecial)
+        {
             _cheatsToggle.onValueChanged.AddListener(HandleCheatsChange);
+        }
     }
 
     private void UnsubscribeFromEvents()
@@ -84,11 +94,16 @@ public class SettingsUIController : MonoBehaviour
         }
 
         if (_initializingSpecial)
+        {
             _cheatsToggle.onValueChanged.RemoveListener(HandleCheatsChange);
+        }
     }
+
     #endregion
 
+
     #region Event Handlers
+
     private void HandleFullscreenChange(bool state) => UpdateSetting(() => _settingsSO.ToggleFullscreen(state));
     private void HandleResolutionChange(int index) => UpdateSetting(() => _settingsSO.SetResolution(index));
     private void HandleShadowsChange(int index) => UpdateSetting(() => _settingsSO.SetShadows(index));
@@ -104,15 +119,17 @@ public class SettingsUIController : MonoBehaviour
         settingAction.Invoke();
         _applier.ApplyAllSettings();
     }
+
     #endregion
 
+
     #region UI Initialization
+
     private void InitializeUIValues()
     {
         if (_initializingGraphics)
         {
             _fullscreenToggle.isOn = _settingsSO.FullscreenMode;
-
             _resDropdown.value = (int)_settingsSO.ScreenResolution;
             _shadowsDropdown.value = (int)_settingsSO.ShadowsQuality;
             _texturesDropdown.value = (int)_settingsSO.TexturesQuality;
@@ -127,7 +144,10 @@ public class SettingsUIController : MonoBehaviour
         }
 
         if (_initializingSpecial)
+        {
             _cheatsToggle.isOn = _settingsSO.IsCheatsEnabled;
+        }
     }
+
     #endregion
 }

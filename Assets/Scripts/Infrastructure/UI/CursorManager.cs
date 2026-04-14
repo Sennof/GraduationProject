@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class CursorManager : MonoBehaviour
 {
+    #region Public Methods
+
     public void ShowCursor() => Cursor.lockState = CursorLockMode.Confined;
-    
-    public void HideCursore() => Cursor.lockState = CursorLockMode.Locked;
+
+    public void HideCursor() => Cursor.lockState = CursorLockMode.Locked;
+
+    #endregion
 }

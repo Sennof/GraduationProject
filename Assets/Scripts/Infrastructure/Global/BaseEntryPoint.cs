@@ -4,37 +4,40 @@ using UnityEngine;
 
 public class BaseEntryPoint : MonoBehaviour
 {
-    #region Abstract
+    #region Protected Methods
+
     protected void InitializeAll<T>() where T : Component, IInitializable
     {
         string totalLog = string.Empty;
 
-        T[] objs = GameObject.FindObjectsByType<T>(FindObjectsInactive.Include, 0);
-        if (objs == null || objs.Length == 0)
+        T[] objects = GameObject.FindObjectsByType<T>(FindObjectsInactive.Include, 0);
+        if (objects == null || objects.Length == 0)
         {
             Debug.LogWarning($"No objects of type {typeof(T).Name} found");
             return;
         }
 
-        int success = 0, fail = 0;
-        foreach (var obj in objs)
+        int successCount = 0;
+        int failCount = 0;
+        foreach (var obj in objects)
         {
             try
             {
                 obj.Initialize();
-                success++;
-                totalLog += $"({success + fail}) Successfully initialized: {obj.name} | typeof {typeof(T).Name}\n";
+                successCount++;
+                totalLog += $"({successCount + failCount}) Successfully initialized: {obj.name} | typeof {typeof(T).Name}\n";
             }
             catch (Exception ex)
             {
                 Debug.LogError($"Failed to initialize {obj.gameObject.name}: {ex}");
-                fail++;
-                totalLog += $"({success + fail}) Failed to initialize: {obj.name} | typeof {typeof(T).Name}\n";
+                failCount++;
+                totalLog += $"({successCount + failCount}) Failed to initialize: {obj.name} | typeof {typeof(T).Name}\n";
             }
         }
 
-        totalLog += $"Initialized {success} {typeof(T).Name}(s), failed {fail}";
+        totalLog += $"Initialized {successCount} {typeof(T).Name}(s), failed {failCount}";
         Debug.Log("[TOTAL INIT LOG]\n" + totalLog);
     }
+
     #endregion
 }

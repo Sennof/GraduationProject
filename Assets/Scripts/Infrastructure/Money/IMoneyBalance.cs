@@ -6,7 +6,7 @@ public interface IMoneyBalance
 
     public void RemoveMoney(int amount, string description);
 
-    public void SetMoney(int value); // DEBUG FEATURE
+    public void SetMoney(int value);
 
     public int GetMoney();
 

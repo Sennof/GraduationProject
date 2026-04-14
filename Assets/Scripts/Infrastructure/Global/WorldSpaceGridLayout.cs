@@ -2,32 +2,50 @@ using UnityEngine;
 
 public class WorldSpaceGridLayout : MonoBehaviour
 {
+    #region Enums
+
     public enum GridAxis { XZ, XY, YZ }
 
+    #endregion
+
+
+    #region Fields
+
     [Header("Settings")]
-    [SerializeField] private GridAxis _axis = GridAxis.XZ; 
-    [SerializeField] private int _columns = 5;            
+    [Tooltip("Axis along which the grid is laid out.")]
+    [SerializeField] private GridAxis _axis = GridAxis.XZ;
+    [Tooltip("Number of columns in the grid.")]
+    [SerializeField] private int _columns = 5;
+    [Tooltip("Size of each cell.")]
     [SerializeField] private Vector2 _cellSize = new Vector2(1f, 1f);
+    [Tooltip("Spacing between cells.")]
     [SerializeField] private Vector2 _spacing = new Vector2(0.1f, 0.1f);
 
     [Header("Alignment")]
-    [SerializeField] private bool _centerGrid = false; 
+    [Tooltip("Center the grid relative to parent.")]
+    [SerializeField] private bool _centerGrid = false;
 
-    void Update()
-    {
-        ArrangeGrid();
-    }
+    #endregion
+
+
+    #region Public Methods
 
     public void ArrangeGrid()
     {
         int childCount = transform.childCount;
-        if (childCount == 0) return;
+        if (childCount == 0)
+        {
+            return;
+        }
 
         for (int i = 0; i < childCount; i++)
         {
             Transform child = transform.GetChild(i);
 
-            if (!child.gameObject.activeSelf) continue;
+            if (!child.gameObject.activeSelf)
+            {
+                continue;
+            }
 
             int row = i / _columns;
             int col = i % _columns;
@@ -58,4 +76,16 @@ public class WorldSpaceGridLayout : MonoBehaviour
             }
         }
     }
+
+    #endregion
+
+
+    #region Unity Methods
+
+    private void Update()
+    {
+        ArrangeGrid();
+    }
+
+    #endregion
 }

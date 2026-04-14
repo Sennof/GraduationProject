@@ -5,16 +5,21 @@ using Zenject;
 public class BuyingManager : MonoBehaviour, IInitializeable
 {
     #region Fields
+
     [Header("Components")]
+    [Tooltip("Interactable that toggles payment UI.")]
     [SerializeField] private Interactable _interactableStateSwitcher;
+    [Tooltip("UI manager for the buying process.")]
     [SerializeField] private UIBuyingManager _ui;
+    [Tooltip("Generator for spawning products at checkout.")]
     [SerializeField] private ProductGenerator _productGenerator;
+
     [Inject] private IMoneyBalance _moneyBalance;
+    [Inject] private IRatingManager _ratingManager;
 
     [Header("Settings")]
+    [Tooltip("List of products that can be sold.")]
     [SerializeField] private List<ProductData> _buyableProductDatas = new();
-
-    [Inject] private IRatingManager _ratingManager;
 
     [Header("Runtime State")]
     private List<ProductData> _productsData = new();
@@ -23,9 +28,12 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private EventBinding<PaymentRequestEvent> _paymentRequestBinding;
     private EventBinding<UIPaymentCardOperation> _paymentOperationBinding;
+
     #endregion
 
-    #region Initialization
+
+    #region Public Methods
+
     public void Initialize()
     {
         _paymentRequestBinding = new EventBinding<PaymentRequestEvent>(HandlePaymentRequest);
@@ -37,12 +45,46 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         _interactableStateSwitcher.SetActiveState(false);
         _ui.Initialize(_buyableProductDatas.ToArray());
     }
+
+    public void TryBuy()
+    {
+        _currentRealTotalPrice = _productGenerator.GetRealTotalPrice();
+
+        int difference = _currentTotalPrice - _currentRealTotalPrice;
+
+        _productGenerator.DestroyAllGenerated();
+        if (difference == 0)
+        {
+            _moneyBalance.AddMoney(_currentTotalPrice, "Sale");
+            _ratingManager.AddRating(0.1f);
+            _ratingManager.AddFeedback("All good, I liked it.");
+        }
+        else if (difference < 0)
+        {
+            _moneyBalance.AddMoney(_currentTotalPrice, "Sale (Receipt error)");
+            _ratingManager.AddRating(0.025f);
+            _ratingManager.AddFeedback("Cashier is a nice guy, miscalculated the receipt.");
+        }
+        else
+        {
+            _moneyBalance.RemoveMoney(_currentRealTotalPrice, "Sale (Theft attempt)");
+            _ratingManager.ReduceRating(0.12f);
+            _ratingManager.AddFeedback("I was robbed!");
+        }
+
+        EventBus<PaymentResponseEvent>.Raise(new PaymentResponseEvent { });
+
+        _interactableStateSwitcher.SetActiveState(false);
+    }
+
     #endregion
 
+
     #region Event Handlers
+
     private void HandlePaymentRequest(PaymentRequestEvent eventData)
     {
-         _interactableStateSwitcher.SetActiveState(true);
+        _interactableStateSwitcher.SetActiveState(true);
         _currentTotalPrice = 0;
         _ui.SetPriceText(0);
 
@@ -60,7 +102,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private void HandlePaymentOperation(UIPaymentCardOperation eventData)
     {
-        if (eventData.isPlus == false && eventData.Price == 1234)
+        if (eventData.IsPlus == false && eventData.Price == 1234)
         {
             _ui.SetPriceText(0);
             _currentTotalPrice = 0;
@@ -68,49 +110,20 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         }
 
         int price = (int)(eventData.Price * GlobalStatsBridge.Instance.GetPricingMod());
-        _currentTotalPrice += eventData.isPlus ? price : -price;
+        _currentTotalPrice += eventData.IsPlus ? price : -price;
         _ui.SetPriceText(_currentTotalPrice);
     }
+
     #endregion
 
-    #region Internal Logic
-    public void TryBuy()
-    {
-        _currentRealTotalPrice = _productGenerator.GetRealTotalPrice();
 
-        int difference = _currentTotalPrice - _currentRealTotalPrice;
-
-        _productGenerator.DestroyAllGenerated();
-        if (difference == 0)
-        {
-            _moneyBalance.AddMoney(_currentTotalPrice, "Продажа товара");
-            _ratingManager.AddRating(0.1f);
-            _ratingManager.AddFeedback("Вск хорошо, мне понравилось.");
-        }
-        else if(difference < 0)
-        {
-            _moneyBalance.AddMoney(_currentTotalPrice, "Продажа товара(Ошибка чека)");
-            _ratingManager.AddRating(0.025f);
-            _ratingManager.AddFeedback("Кассир - красавчик, неправильно чек посчитал.");
-        }
-        else
-        {
-            _moneyBalance.RemoveMoney(_currentRealTotalPrice, "Продажа товара(Попытка воровства)");
-            _ratingManager.ReduceRating(0.12f);
-            _ratingManager.AddFeedback("Меня обокрали!");
-        }
-
-            EventBus<PaymentResponseEvent>.Raise(new PaymentResponseEvent { });
-
-        _interactableStateSwitcher.SetActiveState(false);
-    }
-
-    
+    #region Unity Methods
 
     private void OnDisable()
     {
         EventBus<PaymentRequestEvent>.Deregister(_paymentRequestBinding);
         EventBus<UIPaymentCardOperation>.Deregister(_paymentOperationBinding);
     }
+
     #endregion
 }
