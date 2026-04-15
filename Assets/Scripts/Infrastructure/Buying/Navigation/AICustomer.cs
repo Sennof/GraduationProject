@@ -1,5 +1,6 @@
 #region AI Customer Logic
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,13 +18,17 @@ public class AICustomer : MonoBehaviour
     [Header("State")]
     private NavMeshAgent _navMeshAgent;
     private NavMeshObstacle _navMeshObstacle;
-    private Vector3[] _destinations;
-    private int _currentDestinationIndex = 0;
+    private Shelf[] _targetShelves;
+    private int _currentShelfIndex = 0;
     private Coroutine _logicCoroutine;
     private CustomerState _state = CustomerState.Shopping;
     private AIAgentsManager _manager;
-    [Tooltip("Products the customer intends to buy.")]
-    public GameObject[] _products;
+    private List<GameObject> _collectedProducts = new List<GameObject>();
+
+    // Session rating tracking
+    private float _sessionRatingDelta = 0f;
+    private List<string> _sessionFeedbacks = new List<string>();
+    private bool _sessionFinalized = false;
 
     private enum CustomerState
     {
@@ -51,20 +56,23 @@ public class AICustomer : MonoBehaviour
 
     #region Public Methods
 
-    public void Initialize(Vector3[] destinations, GameObject[] products, AIAgentsManager manager)
+    public void Initialize(Shelf[] targetShelves, AIAgentsManager manager)
     {
-        _products = products;
-        _destinations = destinations;
+        _targetShelves = targetShelves;
         _manager = manager;
-        _currentDestinationIndex = 0;
+        _collectedProducts.Clear();
+        _currentShelfIndex = 0;
         _state = CustomerState.Shopping;
+        _sessionRatingDelta = 0f;
+        _sessionFeedbacks.Clear();
+        _sessionFinalized = false;
 
         if (_logicCoroutine != null)
         {
             StopCoroutine(_logicCoroutine);
         }
 
-        _logicCoroutine = StartCoroutine(FollowDestinationsRoutine());
+        _logicCoroutine = StartCoroutine(FollowShelvesRoutine());
         GlobalStatsBridge.Instance.AddTotalVisitors();
     }
 
@@ -83,20 +91,63 @@ public class AICustomer : MonoBehaviour
     public void ReleaseFromQueue(Vector3 exitPoint)
     {
         _state = CustomerState.Exiting;
-        _destinations = new Vector3[] { exitPoint };
-        _currentDestinationIndex = 0;
 
         if (_logicCoroutine != null)
         {
             StopCoroutine(_logicCoroutine);
         }
 
-        _logicCoroutine = StartCoroutine(FollowDestinationsRoutine());
+        _logicCoroutine = StartCoroutine(MoveToPointAndExit(exitPoint));
     }
 
     public float GetMinReachDistance() => _minReachDistance;
 
-    public GameObject[] GetProducts() => _products;
+    public GameObject[] GetProducts() => _collectedProducts.ToArray();
+
+    /// <summary>
+    /// Called when the customer session ends (successful purchase or leaving without buying).
+    /// </summary>
+    public void FinalizeSession(bool wasSuccessfulPurchase, int totalPriceDifference = 0)
+    {
+        if (_sessionFinalized) return;
+        _sessionFinalized = true;
+
+        // Add purchase-related feedback if it was a successful transaction
+        if (wasSuccessfulPurchase)
+        {
+            if (totalPriceDifference == 0)
+            {
+                _sessionRatingDelta += 0.1f;
+                _sessionFeedbacks.Add("All good, I liked it.");
+            }
+            else if (totalPriceDifference < 0)
+            {
+                _sessionRatingDelta += 0.025f;
+                _sessionFeedbacks.Add("Cashier is a nice guy, miscalculated the receipt.");
+            }
+            else
+            {
+                _sessionRatingDelta -= 0.12f;
+                _sessionFeedbacks.Add("I was robbed!");
+            }
+        }
+        else
+        {
+            // Leaving without buying anything
+            if (_collectedProducts.Count == 0)
+            {
+                _sessionRatingDelta -= 0.05f;
+                _sessionFeedbacks.Add("Nothing interesting, left empty-handed.");
+            }
+        }
+
+        // Apply accumulated rating delta and feedbacks to the global manager
+        if (Mathf.Abs(_sessionRatingDelta) > 0.001f || _sessionFeedbacks.Count > 0)
+        {
+            string combinedFeedback = _sessionFeedbacks.Count > 0 ? string.Join(" ", _sessionFeedbacks) : "";
+            RatingManager.Instance.ApplySessionFeedback(_sessionRatingDelta, combinedFeedback);
+        }
+    }
 
     #endregion
 
@@ -145,26 +196,78 @@ public class AICustomer : MonoBehaviour
         SetNavigationMode(false);
     }
 
-    private IEnumerator FollowDestinationsRoutine()
+    private IEnumerator MoveToPointAndExit(Vector3 exitPoint)
     {
-        while (_currentDestinationIndex < _destinations.Length)
+        yield return StartCoroutine(MoveToPoint(exitPoint));
+        // Session will be finalized when agent is killed by manager
+    }
+
+    private IEnumerator FollowShelvesRoutine()
+    {
+        while (_currentShelfIndex < _targetShelves.Length)
         {
-            Vector3 target = _destinations[_currentDestinationIndex];
-            yield return StartCoroutine(MoveToPoint(target));
+            Shelf targetShelf = _targetShelves[_currentShelfIndex];
+            Vector3 navPoint = targetShelf.GetNavPointPosition();
+
+            yield return StartCoroutine(MoveToPoint(navPoint));
 
             if (_state == CustomerState.Shopping)
             {
                 SetNavigationMode(false);
+
+                // Determine how many items customer wants from this shelf based on rating
+                int desiredAmount = GetDesiredItemCount();
+                int takenCount = 0;
+
+                for (int i = 0; i < desiredAmount; i++)
+                {
+                    GameObject product = targetShelf.PrepareProduct();
+                    if (product != null)
+                    {
+                        _collectedProducts.Add(product);
+                        takenCount++;
+                    }
+                    else
+                    {
+                        break; // No more items on shelf
+                    }
+                }
+
+                if (takenCount == 0)
+                {
+                    // Shelf was completely empty
+                    _sessionRatingDelta -= 0.025f;
+                    _sessionFeedbacks.Add("Empty shelf...");
+                }
+                else if (takenCount < desiredAmount)
+                {
+                    // Not enough items
+                    _sessionRatingDelta -= 0.01f;
+                    _sessionFeedbacks.Add("Not enough items...");
+                }
+                // else: took everything wanted, no penalty
+
                 yield return new WaitForSeconds(_stopDuration);
                 SetNavigationMode(true);
             }
-            _currentDestinationIndex++;
+            _currentShelfIndex++;
         }
 
         if (_state == CustomerState.Shopping)
         {
             _manager.JoinQueue(this);
         }
+    }
+
+    private int GetDesiredItemCount()
+    {
+        float rating = RatingManager.Instance.GetRating();
+
+        if (rating < 1f) return 1;
+        else if (rating < 2f) return Random.Range(1, 3);  // 1-2
+        else if (rating < 3f) return Random.Range(2, 4);  // 2-3
+        else if (rating < 4f) return Random.Range(3, 5);  // 3-4
+        else return Random.Range(4, 7);                   // 4-6
     }
 
     #endregion

@@ -15,7 +15,6 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     [SerializeField] private ProductGenerator _productGenerator;
 
     [Inject] private IMoneyBalance _moneyBalance;
-    [Inject] private IRatingManager _ratingManager;
 
     [Header("Settings")]
     [Tooltip("List of products that can be sold.")]
@@ -25,6 +24,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     private List<ProductData> _productsData = new();
     private int _currentTotalPrice = 0;
     private int _currentRealTotalPrice = 0;
+    private AICustomer _currentCustomer;
 
     private EventBinding<PaymentRequestEvent> _paymentRequestBinding;
     private EventBinding<UIPaymentCardOperation> _paymentOperationBinding;
@@ -53,23 +53,22 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         int difference = _currentTotalPrice - _currentRealTotalPrice;
 
         _productGenerator.DestroyAllGenerated();
-        if (difference == 0)
+
+        // Apply money transaction
+        if (difference >= 0)
         {
-            _moneyBalance.AddMoney(_currentTotalPrice, "Sale");
-            _ratingManager.AddRating(0.1f);
-            _ratingManager.AddFeedback("All good, I liked it.");
-        }
-        else if (difference < 0)
-        {
-            _moneyBalance.AddMoney(_currentTotalPrice, "Sale (Receipt error)");
-            _ratingManager.AddRating(0.025f);
-            _ratingManager.AddFeedback("Cashier is a nice guy, miscalculated the receipt.");
+            _moneyBalance.AddMoney(_currentTotalPrice, difference == 0 ? "Sale" : "Sale (Receipt error)");
         }
         else
         {
             _moneyBalance.RemoveMoney(_currentRealTotalPrice, "Sale (Theft attempt)");
-            _ratingManager.ReduceRating(0.12f);
-            _ratingManager.AddFeedback("I was robbed!");
+        }
+
+        // Finalize customer session with purchase result
+        if (_currentCustomer != null)
+        {
+            _currentCustomer.FinalizeSession(true, difference);
+            _currentCustomer = null;
         }
 
         EventBus<PaymentResponseEvent>.Raise(new PaymentResponseEvent { });
@@ -84,6 +83,8 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private void HandlePaymentRequest(PaymentRequestEvent eventData)
     {
+        _currentCustomer = eventData.Customer;
+
         _interactableStateSwitcher.SetActiveState(true);
         _currentTotalPrice = 0;
         _ui.SetPriceText(0);

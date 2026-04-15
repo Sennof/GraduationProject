@@ -8,7 +8,7 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     #region Fields
 
     [Header("Settings")]
-    [Tooltip("List of shelves available for product generation.")]
+    [Tooltip("List of shelves (not directly used for generation anymore, kept for potential analytics).")]
     [SerializeField] private List<Shelf> _shelves = new();
     [Tooltip("Folder where generated products are placed.")]
     [SerializeField] private Transform _spawnFolder;
@@ -54,41 +54,6 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     }
 
     public int GetRealTotalPrice() => _currentRealTotalPrice;
-
-    public GameObject[] GenerateProducts()
-    {
-        int needProductsMin = Random.Range(1, _shelves.Count);
-        List<GameObject> items = new();
-
-        foreach (Shelf shelf in _shelves)
-        {
-            GameObject item = shelf.PrepareProduct();
-            if (item != null)
-            {
-                items.Add(item);
-            }
-        }
-
-        if (items.Count < needProductsMin)
-        {
-            _ratingManager.ReduceRating(0.05f);
-            _ratingManager.AddFeedback("Small assortment...");
-        }
-        else if (items.Count == needProductsMin)
-        {
-            _ratingManager.AddRating(0.025f);
-            _ratingManager.AddFeedback("Found what I needed!");
-        }
-        else
-        {
-            _ratingManager.AddRating(0.05f);
-            _ratingManager.AddFeedback("You have so much stuff!");
-        }
-
-        GlobalStatsBridge.Instance.AddTotalProducts(items.Count);
-
-        return items.ToArray();
-    }
 
     #endregion
 

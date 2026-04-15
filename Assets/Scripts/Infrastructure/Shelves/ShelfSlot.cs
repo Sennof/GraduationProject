@@ -104,5 +104,7 @@ public class ShelfSlot : MonoBehaviour
         return item;
     }
 
+    public int GetKeptObjectsCount() => _keptObjects.Count;
+
     #endregion
 }

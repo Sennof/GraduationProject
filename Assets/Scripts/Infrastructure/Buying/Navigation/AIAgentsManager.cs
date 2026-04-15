@@ -8,7 +8,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     #region Fields
 
     [Header("Links")]
-    [Tooltip("Reference to the product generator for creating customer shopping lists.")]
+    [Tooltip("Reference to the product generator (used only for checkout spawning).")]
     [SerializeField] private ProductGenerator _productGenerator;
 
     [Header("General Settings")]
@@ -42,8 +42,8 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     [Header("Debug Info")]
     [Tooltip("List of currently active agent instances.")]
     [SerializeField] private List<GameObject> _activeAgents = new();
-    [Tooltip("Navigation points collected from shelves for agent waypoints.")]
-    [SerializeField] private List<Vector3> _navPoints = new();
+    [Tooltip("Available shelves for agent navigation.")]
+    [SerializeField] private List<Shelf> _availableShelves = new();
 
     private Coroutine _trafficCoroutine;
     private EventBinding<OnShelfInitializationEvent> _shelfEventBinding;
@@ -79,6 +79,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     {
         _activeAgents.Clear();
         _customerQueue.Clear();
+        _availableShelves.Clear();
 
         _shelfEventBinding = new EventBinding<OnShelfInitializationEvent>(HandleShelfEvent);
         EventBus<OnShelfInitializationEvent>.Register(_shelfEventBinding);
@@ -102,9 +103,15 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         if (_activeAgents.Contains(agent))
         {
             _activeAgents.Remove(agent);
+            if (agent.TryGetComponent(out AICustomer customer))
+            {
+                customer.FinalizeSession(false);
+            }
             Destroy(agent);
         }
     }
+
+    public AICustomer GetFirstInQueue() => _customerQueue.Count > 0 ? _customerQueue[0] : null;
 
     #endregion
 
@@ -119,21 +126,37 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
         if (agent.TryGetComponent(out AICustomer customer))
         {
-            customer.Initialize(GenerateWaypoints(), _productGenerator.GenerateProducts(), this);
+            Shelf[] targetShelves = GenerateTargetShelves();
+            customer.Initialize(targetShelves, this);
         }
     }
 
-    private Vector3[] GenerateWaypoints()
+    private Shelf[] GenerateTargetShelves()
     {
-        int wayLength = Random.Range(1, Mathf.Min(4, _navPoints.Count + 1));
-        List<Vector3> way = new List<Vector3>();
-
-        for (int i = 0; i < wayLength; i++)
+        List<Shelf> visitableShelves = new List<Shelf>();
+        foreach (Shelf shelf in _availableShelves)
         {
-            way.Add(_navPoints[Random.Range(0, _navPoints.Count)]);
+            if (shelf.IsVisitable())
+                visitableShelves.Add(shelf);
         }
 
-        return way.ToArray();
+        if (visitableShelves.Count == 0)
+        {
+            return new Shelf[0];
+        }
+
+        int wayLength = Random.Range(1, Mathf.Min(4, visitableShelves.Count + 1));
+        List<Shelf> selectedShelves = new List<Shelf>();
+
+        List<Shelf> tempList = new List<Shelf>(visitableShelves);
+        for (int i = 0; i < wayLength && tempList.Count > 0; i++)
+        {
+            int index = Random.Range(0, tempList.Count);
+            selectedShelves.Add(tempList[index]);
+            tempList.RemoveAt(index);
+        }
+
+        return selectedShelves.ToArray();
     }
 
     private IEnumerator TrafficGoingRoutine()
@@ -142,7 +165,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         {
             if (GlobalStatsBridge.Instance.GetShopOpenClosed())
             {
-                if (_enabled && _activeAgents.Count < _maxAgents && _navPoints.Count > 0)
+                if (_enabled && _activeAgents.Count < _maxAgents && _availableShelves.Count > 0)
                 {
                     SpawnAgent();
                 }
@@ -241,7 +264,11 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             yield break;
         }
 
-        EventBus<PaymentRequestEvent>.Raise(new PaymentRequestEvent { Products = products });
+        EventBus<PaymentRequestEvent>.Raise(new PaymentRequestEvent
+        {
+            Products = products,
+            Customer = first
+        });
     }
 
     #endregion
@@ -266,11 +293,14 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     {
         if (data.Adding)
         {
-            _navPoints.Add(data.GlobalPosition);
+            if (!_availableShelves.Contains(data.Shelf))
+            {
+                _availableShelves.Add(data.Shelf);
+            }
         }
         else
         {
-            _navPoints.Remove(data.GlobalPosition);
+            _availableShelves.Remove(data.Shelf);
         }
     }
 

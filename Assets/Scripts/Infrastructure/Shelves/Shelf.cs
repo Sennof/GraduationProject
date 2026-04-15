@@ -16,6 +16,8 @@ public class Shelf : MonoBehaviour, IInitializeable
     [SerializeField] private ObjectSizeEnum _objectSize;
     [Tooltip("Navigation point for AI agents.")]
     [SerializeField] private Transform _navPoint;
+    [Tooltip("Can customers visit this shelf?")]
+    [SerializeField] private bool _isVisitable = true;
 
     private EventBinding<ShelfDataResponsingEvent> _dataBinding;
     private bool _initialized = false;
@@ -42,31 +44,48 @@ public class Shelf : MonoBehaviour, IInitializeable
             slot.Initialize(_inventory, _objectSize);
         }
 
-        EventBus<OnShelfInitializationEvent>.Raise(new OnShelfInitializationEvent
+        if (_isVisitable)
         {
-            GlobalPosition = _navPoint.position,
-            Adding = true,
-            Shelf = this
-        });
+            EventBus<OnShelfInitializationEvent>.Raise(new OnShelfInitializationEvent
+            {
+                GlobalPosition = _navPoint.position,
+                Adding = true,
+                Shelf = this
+            });
+        }
 
         _initialized = true;
     }
 
     public GameObject PrepareProduct()
     {
-        int counter = Random.Range(1, _slots.Count);
-
-        for (int i = 0; i < counter; i++)
+        // Try to find any slot with items
+        foreach (ShelfSlot slot in _slots)
         {
-            int slotId = Random.Range(0, _slots.Count);
-            GameObject found = _slots[slotId].TryGetItem();
-
+            GameObject found = slot.TryGetItem();
             if (found != null)
             {
                 return found;
             }
         }
         return null;
+    }
+
+    public Vector3 GetNavPointPosition() => _navPoint.position;
+
+    public bool IsVisitable() => _isVisitable;
+
+    /// <summary>
+    /// Returns the total number of items currently on this shelf.
+    /// </summary>
+    public int GetTotalItemCount()
+    {
+        int count = 0;
+        foreach (ShelfSlot slot in _slots)
+        {
+            count += slot.GetKeptObjectsCount();
+        }
+        return count;
     }
 
     #endregion
@@ -89,12 +108,15 @@ public class Shelf : MonoBehaviour, IInitializeable
 
     private void OnDisable()
     {
-        EventBus<OnShelfInitializationEvent>.Raise(new OnShelfInitializationEvent
+        if (_isVisitable)
         {
-            GlobalPosition = _navPoint.position,
-            Adding = false,
-            Shelf = this
-        });
+            EventBus<OnShelfInitializationEvent>.Raise(new OnShelfInitializationEvent
+            {
+                GlobalPosition = _navPoint.position,
+                Adding = false,
+                Shelf = this
+            });
+        }
         EventBus<ShelfDataResponsingEvent>.Deregister(_dataBinding);
     }
 
