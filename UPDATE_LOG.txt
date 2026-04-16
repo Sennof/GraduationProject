@@ -1,7 +1,7 @@
 0.10.1f - customer behavior
 
 ADDED:
-
+- Feedback bubbles
 
 CHANGED:
 - The customer picks up the product from the shelf only when he comes close

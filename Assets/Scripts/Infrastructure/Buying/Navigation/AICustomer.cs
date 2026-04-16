@@ -15,6 +15,10 @@ public class AICustomer : MonoBehaviour
     [Tooltip("Distance at which the agent considers it has reached a destination.")]
     [SerializeField] private float _minReachDistance = 0.5f;
 
+    [Header("Feedback Bubble")]
+    [Tooltip("Reference to the visual feedback bubble component.")]
+    [SerializeField] private CustomerFeedbackBubble _feedbackBubble;
+
     [Header("State")]
     private NavMeshAgent _navMeshAgent;
     private NavMeshObstacle _navMeshObstacle;
@@ -49,6 +53,9 @@ public class AICustomer : MonoBehaviour
         _navMeshAgent.stoppingDistance = _minReachDistance;
         _navMeshObstacle.enabled = false;
         _navMeshObstacle.carving = true;
+
+        if (_feedbackBubble != null)
+            _feedbackBubble.Initialize(transform);
     }
 
     #endregion
@@ -105,6 +112,15 @@ public class AICustomer : MonoBehaviour
     public GameObject[] GetProducts() => _collectedProducts.ToArray();
 
     /// <summary>
+    /// Shows a feedback message above the customer's head.
+    /// </summary>
+    public void ShowFeedback(string message)
+    {
+        if (_feedbackBubble != null)
+            _feedbackBubble.ShowMessage(message);
+    }
+
+    /// <summary>
     /// Called when the customer session ends (successful purchase or leaving without buying).
     /// </summary>
     public void FinalizeSession(bool wasSuccessfulPurchase, int totalPriceDifference = 0)
@@ -119,16 +135,19 @@ public class AICustomer : MonoBehaviour
             {
                 _sessionRatingDelta += 0.1f;
                 _sessionFeedbacks.Add("All good, I liked it.");
+                ShowFeedback("All good!");
             }
             else if (totalPriceDifference < 0)
             {
                 _sessionRatingDelta += 0.025f;
                 _sessionFeedbacks.Add("Cashier is a nice guy, miscalculated the receipt.");
+                ShowFeedback("Nice discount!");
             }
             else
             {
                 _sessionRatingDelta -= 0.12f;
                 _sessionFeedbacks.Add("I was robbed!");
+                ShowFeedback("I was robbed!");
             }
         }
         else
@@ -138,6 +157,7 @@ public class AICustomer : MonoBehaviour
             {
                 _sessionRatingDelta -= 0.05f;
                 _sessionFeedbacks.Add("Nothing interesting, left empty-handed.");
+                ShowFeedback("Nothing here...");
             }
         }
 
@@ -238,14 +258,20 @@ public class AICustomer : MonoBehaviour
                     // Shelf was completely empty
                     _sessionRatingDelta -= 0.025f;
                     _sessionFeedbacks.Add("Empty shelf...");
+                    ShowFeedback("Empty shelf!");
                 }
                 else if (takenCount < desiredAmount)
                 {
                     // Not enough items
                     _sessionRatingDelta -= 0.01f;
                     _sessionFeedbacks.Add("Not enough items...");
+                    ShowFeedback("Not enough...");
                 }
-                // else: took everything wanted, no penalty
+                else if (Random.value < 0.25f)
+                {
+                    // 25% chance to show positive feedback when shelf has items
+                    ShowFeedback("Just what I needed!");
+                }
 
                 yield return new WaitForSeconds(_stopDuration);
                 SetNavigationMode(true);
