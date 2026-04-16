@@ -1,12 +1,14 @@
-0.10.1f - customer behavior
+0.10.4 - customer behavior
 
 ADDED:
 - Feedback bubbles
+- Individual mark-up for products
 
 CHANGED:
 - The customer picks up the product from the shelf only when he comes close
 - The customer's review is added once (one customer - one review)
 - The buyer can take more than one item from the rack
+- Markups' UI (pc)
 
 FIXED:
 - Huge code refactoring

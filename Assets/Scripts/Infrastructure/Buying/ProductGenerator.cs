@@ -37,23 +37,16 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     public void SpawnBuyingProducts(GameObject[] products)
     {
         if (_spawningProductsCoroutine != null)
-        {
             StopCoroutine(_spawningProductsCoroutine);
-        }
 
-        // Calculate real total price synchronously before spawning
         _currentRealTotalPrice = CalculateRealTotalPrice(products);
-
         _spawningProductsCoroutine = StartCoroutine(SpawningProducts(products));
     }
 
     public void DestroyAllGenerated()
     {
         foreach (GameObject obj in _generatedObjects)
-        {
             Destroy(obj);
-        }
-
         _generatedObjects.Clear();
         _currentRealTotalPrice = 0;
     }
@@ -70,9 +63,7 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
         if (eventData.Adding)
         {
             if (!_shelves.Contains(eventData.Shelf))
-            {
                 _shelves.Add(eventData.Shelf);
-            }
         }
         else
         {
@@ -88,20 +79,15 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     private int CalculateRealTotalPrice(GameObject[] products)
     {
         int total = 0;
-        float pricingMod = GlobalStatsBridge.Instance.GetPricingMod();
-
         foreach (GameObject product in products)
         {
             if (product != null && product.TryGetComponent(out ItemObject item))
             {
                 ProductData data = item.GetProductData();
                 if (data != null)
-                {
-                    total += (int)(data.Price * pricingMod);
-                }
+                    total += data.GetPriceWithMarkup();
             }
         }
-
         return total;
     }
 
@@ -122,9 +108,7 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
 
                 product.GetComponent<Rigidbody>().isKinematic = false;
                 if (product.TryGetComponent(out Interactable interactable))
-                {
                     interactable.SetActiveState(false);
-                }
 
                 product.transform.SetParent(_spawnFolder);
                 product.transform.position = _spawnFolder.position;

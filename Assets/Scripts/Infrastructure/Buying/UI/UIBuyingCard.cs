@@ -16,7 +16,6 @@ public class UIBuyingCard : MonoBehaviour
 
     private int _amount = 0;
     private ProductData _productData;
-    private UIBuyingManager _manager;
 
     private EventBinding<PaymentResponseEvent> _paymentResponseBinding;
 
@@ -31,10 +30,8 @@ public class UIBuyingCard : MonoBehaviour
         EventBus<PaymentResponseEvent>.Register(_paymentResponseBinding);
 
         _productData = data;
-        _manager = manager;
         _titleText.text = data.TitleName;
         _iconImage.sprite = data.Icon;
-
         ResetAmount();
     }
 
@@ -42,18 +39,17 @@ public class UIBuyingCard : MonoBehaviour
     {
         _amount++;
         UpdateAmountText();
-        EventBus<UIPaymentCardOperation>.Raise(new UIPaymentCardOperation { IsPlus = true, Price = _productData.Price });
+        int priceWithMarkup = _productData.GetPriceWithMarkup();
+        EventBus<UIPaymentCardOperation>.Raise(new UIPaymentCardOperation { IsPlus = true, Price = priceWithMarkup });
     }
 
     public void ReduceAmount()
     {
-        if (_amount <= 0)
-        {
-            return;
-        }
+        if (_amount <= 0) return;
         _amount--;
         UpdateAmountText();
-        EventBus<UIPaymentCardOperation>.Raise(new UIPaymentCardOperation { IsPlus = false, Price = _productData.Price });
+        int priceWithMarkup = _productData.GetPriceWithMarkup();
+        EventBus<UIPaymentCardOperation>.Raise(new UIPaymentCardOperation { IsPlus = false, Price = priceWithMarkup });
     }
 
     #endregion

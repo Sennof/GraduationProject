@@ -23,3 +23,4 @@ MonoBehaviour:
   ObjectName: CheapShelfS
   Size: 3
   Price: 200
+  DefaultMarkup: 0.2

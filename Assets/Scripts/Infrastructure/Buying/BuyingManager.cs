@@ -50,20 +50,13 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     public void TryBuy()
     {
         _currentRealTotalPrice = _productGenerator.GetRealTotalPrice();
-
         int difference = _currentTotalPrice - _currentRealTotalPrice;
 
-        // Apply money transaction
         if (difference >= 0)
-        {
             _moneyBalance.AddMoney(_currentTotalPrice, difference == 0 ? "Sale" : "Sale (Receipt error)");
-        }
         else
-        {
             _moneyBalance.RemoveMoney(_currentRealTotalPrice, "Sale (Theft attempt)");
-        }
 
-        // Finalize customer session with purchase result
         if (_currentCustomer != null)
         {
             _currentCustomer.FinalizeSession(true, difference);
@@ -96,9 +89,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         foreach (GameObject obj in eventData.Products)
         {
             if (obj != null && obj.TryGetComponent(out ItemObject item))
-            {
                 _productsData.Add(item.GetProductData());
-            }
         }
 
         _productGenerator.SpawnBuyingProducts(eventData.Products);
@@ -113,7 +104,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
             return;
         }
 
-        int price = (int)(eventData.Price * GlobalStatsBridge.Instance.GetPricingMod());
+        int price = eventData.Price; // Price already passed as base price, we'll convert to markup
         _currentTotalPrice += eventData.IsPlus ? price : -price;
         _ui.SetPriceText(_currentTotalPrice);
     }
