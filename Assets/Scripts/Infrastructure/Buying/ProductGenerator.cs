@@ -40,6 +40,10 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
         {
             StopCoroutine(_spawningProductsCoroutine);
         }
+
+        // Calculate real total price synchronously before spawning
+        _currentRealTotalPrice = CalculateRealTotalPrice(products);
+
         _spawningProductsCoroutine = StartCoroutine(SpawningProducts(products));
     }
 
@@ -51,6 +55,7 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
         }
 
         _generatedObjects.Clear();
+        _currentRealTotalPrice = 0;
     }
 
     public int GetRealTotalPrice() => _currentRealTotalPrice;
@@ -78,26 +83,52 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     #endregion
 
 
+    #region Private Methods
+
+    private int CalculateRealTotalPrice(GameObject[] products)
+    {
+        int total = 0;
+        float pricingMod = GlobalStatsBridge.Instance.GetPricingMod();
+
+        foreach (GameObject product in products)
+        {
+            if (product != null && product.TryGetComponent(out ItemObject item))
+            {
+                ProductData data = item.GetProductData();
+                if (data != null)
+                {
+                    total += (int)(data.Price * pricingMod);
+                }
+            }
+        }
+
+        return total;
+    }
+
+    #endregion
+
+
     #region Coroutines
 
     private IEnumerator SpawningProducts(GameObject[] products)
     {
         foreach (GameObject product in products)
         {
+            if (product == null) continue;
+
             if (product.TryGetComponent(out ItemObject item))
             {
                 _generatedObjects.Add(product);
 
-                ProductData data = item.GetProductData();
                 product.GetComponent<Rigidbody>().isKinematic = false;
-                product.GetComponent<Interactable>().SetActiveState(false);
+                if (product.TryGetComponent(out Interactable interactable))
+                {
+                    interactable.SetActiveState(false);
+                }
 
                 product.transform.SetParent(_spawnFolder);
                 product.transform.position = _spawnFolder.position;
-
                 product.SetActive(true);
-
-                _currentRealTotalPrice += (int)(data.Price * GlobalStatsBridge.Instance.GetPricingMod());
 
                 yield return new WaitForSeconds(_puttingCooldown);
             }

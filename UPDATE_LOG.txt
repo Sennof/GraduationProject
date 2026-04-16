@@ -11,3 +11,4 @@ CHANGED:
 FIXED:
 - Huge code refactoring
 - Rounding up the rating
+- cash register calculation

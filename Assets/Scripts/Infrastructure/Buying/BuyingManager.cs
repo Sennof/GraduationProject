@@ -53,8 +53,6 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
         int difference = _currentTotalPrice - _currentRealTotalPrice;
 
-        _productGenerator.DestroyAllGenerated();
-
         // Apply money transaction
         if (difference >= 0)
         {
@@ -72,9 +70,13 @@ public class BuyingManager : MonoBehaviour, IInitializeable
             _currentCustomer = null;
         }
 
+        _productGenerator.DestroyAllGenerated();
+
         EventBus<PaymentResponseEvent>.Raise(new PaymentResponseEvent { });
 
         _interactableStateSwitcher.SetActiveState(false);
+        _currentTotalPrice = 0;
+        _ui.SetPriceText(0);
     }
 
     #endregion
@@ -93,7 +95,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         _productsData.Clear();
         foreach (GameObject obj in eventData.Products)
         {
-            if (obj.TryGetComponent(out ItemObject item))
+            if (obj != null && obj.TryGetComponent(out ItemObject item))
             {
                 _productsData.Add(item.GetProductData());
             }
@@ -104,7 +106,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private void HandlePaymentOperation(UIPaymentCardOperation eventData)
     {
-        if (eventData.IsPlus == false && eventData.Price == 1234)
+        if (!eventData.IsPlus && eventData.Price == 1234)
         {
             _ui.SetPriceText(0);
             _currentTotalPrice = 0;
