@@ -1631,7 +1631,6 @@ MonoBehaviour:
   _turnOffAwake: 1
   _turnOnAwake: 1
   _onAwakeObjId: 0
-  _isActive: 0
   _triggerKey: 0
   _actionsOnActivating:
     m_PersistentCalls:
@@ -12122,7 +12121,6 @@ MonoBehaviour:
   _turnOffAwake: 1
   _turnOnAwake: 1
   _onAwakeObjId: 0
-  _isActive: 0
   _triggerKey: 0
   _actionsOnActivating:
     m_PersistentCalls:

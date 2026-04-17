@@ -8,7 +8,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     #region Fields
 
     [Header("Links")]
-    [Tooltip("Reference to the product generator for creating customer shopping lists.")]
+    [Tooltip("Reference to the product generator (used only for checkout spawning).")]
     [SerializeField] private ProductGenerator _productGenerator;
 
     [Header("General Settings")]
@@ -42,8 +42,8 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     [Header("Debug Info")]
     [Tooltip("List of currently active agent instances.")]
     [SerializeField] private List<GameObject> _activeAgents = new();
-    [Tooltip("Navigation points collected from shelves for agent waypoints.")]
-    [SerializeField] private List<Vector3> _navPoints = new();
+    [Tooltip("Available shelves for agent navigation.")]
+    [SerializeField] private List<Shelf> _availableShelves = new();
 
     private Coroutine _trafficCoroutine;
     private EventBinding<OnShelfInitializationEvent> _shelfEventBinding;
@@ -79,6 +79,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     {
         _activeAgents.Clear();
         _customerQueue.Clear();
+        _availableShelves.Clear();
 
         _shelfEventBinding = new EventBinding<OnShelfInitializationEvent>(HandleShelfEvent);
         EventBus<OnShelfInitializationEvent>.Register(_shelfEventBinding);
@@ -102,9 +103,15 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         if (_activeAgents.Contains(agent))
         {
             _activeAgents.Remove(agent);
+            if (agent.TryGetComponent(out AICustomer customer))
+            {
+                customer.FinalizeSession(false);
+            }
             Destroy(agent);
         }
     }
+
+    public AICustomer GetFirstInQueue() => _customerQueue.Count > 0 ? _customerQueue[0] : null;
 
     #endregion
 
@@ -113,27 +120,87 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
     private void SpawnAgent()
     {
+        if (_agentPrefabs.Count == 0) return;
+
         GameObject prefab = _agentPrefabs[Random.Range(0, _agentPrefabs.Count)];
         GameObject agent = Instantiate(prefab, _spawnPoint, Quaternion.identity, _folder);
         _activeAgents.Add(agent);
 
         if (agent.TryGetComponent(out AICustomer customer))
         {
-            customer.Initialize(GenerateWaypoints(), _productGenerator.GenerateProducts(), this);
+            Shelf[] targetShelves = GenerateTargetShelves();
+            CustomerClass customerClass = ChooseCustomerClassByRating();
+            customer.Initialize(targetShelves, this, customerClass);
         }
     }
 
-    private Vector3[] GenerateWaypoints()
+    private CustomerClass ChooseCustomerClassByRating()
     {
-        int wayLength = Random.Range(1, Mathf.Min(4, _navPoints.Count + 1));
-        List<Vector3> way = new List<Vector3>();
+        float rating = GlobalStatsBridge.Instance.GetRating();
+        float random = Random.value;
 
-        for (int i = 0; i < wayLength; i++)
+        if (rating < 1f)
         {
-            way.Add(_navPoints[Random.Range(0, _navPoints.Count)]);
+            if (random < 0.95f) return CustomerClass.Poor;
+            else if (random < 0.995f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 2f)
+        {
+            if (random < 0.85f) return CustomerClass.Poor;
+            else if (random < 0.985f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 3f)
+        {
+            if (random < 0.60f) return CustomerClass.Poor;
+            else if (random < 0.95f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 4f)
+        {
+            if (random < 0.33f) return CustomerClass.Poor;
+            else if (random < 0.93f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 5f)
+        {
+            if (random < 0.05f) return CustomerClass.Poor;
+            else if (random < 0.85f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else
+        {
+            return CustomerClass.Rich;
+        }
+    }
+
+    private Shelf[] GenerateTargetShelves()
+    {
+        List<Shelf> visitableShelves = new List<Shelf>();
+        foreach (Shelf shelf in _availableShelves)
+        {
+            if (shelf.IsVisitable())
+                visitableShelves.Add(shelf);
         }
 
-        return way.ToArray();
+        if (visitableShelves.Count == 0)
+        {
+            return new Shelf[0];
+        }
+
+        int wayLength = Random.Range(1, Mathf.Min(4, visitableShelves.Count + 1));
+        List<Shelf> selectedShelves = new List<Shelf>();
+
+        List<Shelf> tempList = new List<Shelf>(visitableShelves);
+        for (int i = 0; i < wayLength && tempList.Count > 0; i++)
+        {
+            int index = Random.Range(0, tempList.Count);
+            selectedShelves.Add(tempList[index]);
+            tempList.RemoveAt(index);
+        }
+
+        return selectedShelves.ToArray();
     }
 
     private IEnumerator TrafficGoingRoutine()
@@ -142,7 +209,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         {
             if (GlobalStatsBridge.Instance.GetShopOpenClosed())
             {
-                if (_enabled && _activeAgents.Count < _maxAgents && _navPoints.Count > 0)
+                if (_enabled && _activeAgents.Count < _maxAgents && _availableShelves.Count > 0)
                 {
                     SpawnAgent();
                 }
@@ -211,23 +278,15 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
         yield return new WaitUntil(() =>
         {
-            if (first == null)
-            {
-                return true;
-            }
+            if (first == null) return true;
 
             Vector3 pos1 = first.transform.position;
             Vector3 pos2 = _buyingPlacePoint;
-
             float flatDistance = Vector2.Distance(new Vector2(pos1.x, pos1.z), new Vector2(pos2.x, pos2.z));
-
             return flatDistance < (first.GetMinReachDistance() + 0.2f);
         });
 
-        if (first == null)
-        {
-            yield break;
-        }
+        if (first == null) yield break;
 
         GameObject[] products = first.GetProducts();
 
@@ -241,7 +300,11 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
             yield break;
         }
 
-        EventBus<PaymentRequestEvent>.Raise(new PaymentRequestEvent { Products = products });
+        EventBus<PaymentRequestEvent>.Raise(new PaymentRequestEvent
+        {
+            Products = products,
+            Customer = first
+        });
     }
 
     #endregion
@@ -266,11 +329,12 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
     {
         if (data.Adding)
         {
-            _navPoints.Add(data.GlobalPosition);
+            if (!_availableShelves.Contains(data.Shelf))
+                _availableShelves.Add(data.Shelf);
         }
         else
         {
-            _navPoints.Remove(data.GlobalPosition);
+            _availableShelves.Remove(data.Shelf);
         }
     }
 

@@ -104,6 +104,7 @@ public struct OnShelfInitializationEvent : IEvent
 public struct PaymentRequestEvent : IEvent
 {
     public GameObject[] Products;
+    public AICustomer Customer; // Added to track which customer is paying
 }
 
 public struct UIPaymentCardOperation : IEvent

@@ -1,3 +1,4 @@
+#region Buying Manager Logic
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -15,7 +16,6 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     [SerializeField] private ProductGenerator _productGenerator;
 
     [Inject] private IMoneyBalance _moneyBalance;
-    [Inject] private IRatingManager _ratingManager;
 
     [Header("Settings")]
     [Tooltip("List of products that can be sold.")]
@@ -25,6 +25,7 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     private List<ProductData> _productsData = new();
     private int _currentTotalPrice = 0;
     private int _currentRealTotalPrice = 0;
+    private AICustomer _currentCustomer;
 
     private EventBinding<PaymentRequestEvent> _paymentRequestBinding;
     private EventBinding<UIPaymentCardOperation> _paymentOperationBinding;
@@ -49,32 +50,26 @@ public class BuyingManager : MonoBehaviour, IInitializeable
     public void TryBuy()
     {
         _currentRealTotalPrice = _productGenerator.GetRealTotalPrice();
-
         int difference = _currentTotalPrice - _currentRealTotalPrice;
 
-        _productGenerator.DestroyAllGenerated();
-        if (difference == 0)
-        {
-            _moneyBalance.AddMoney(_currentTotalPrice, "Sale");
-            _ratingManager.AddRating(0.1f);
-            _ratingManager.AddFeedback("All good, I liked it.");
-        }
-        else if (difference < 0)
-        {
-            _moneyBalance.AddMoney(_currentTotalPrice, "Sale (Receipt error)");
-            _ratingManager.AddRating(0.025f);
-            _ratingManager.AddFeedback("Cashier is a nice guy, miscalculated the receipt.");
-        }
+        if (difference >= 0)
+            _moneyBalance.AddMoney(_currentTotalPrice, difference == 0 ? "Sale" : "Sale (Receipt error)");
         else
-        {
             _moneyBalance.RemoveMoney(_currentRealTotalPrice, "Sale (Theft attempt)");
-            _ratingManager.ReduceRating(0.12f);
-            _ratingManager.AddFeedback("I was robbed!");
+
+        if (_currentCustomer != null)
+        {
+            _currentCustomer.FinalizeSession(true, difference);
+            _currentCustomer = null;
         }
+
+        _productGenerator.DestroyAllGenerated();
 
         EventBus<PaymentResponseEvent>.Raise(new PaymentResponseEvent { });
 
         _interactableStateSwitcher.SetActiveState(false);
+        _currentTotalPrice = 0;
+        _ui.SetPriceText(0);
     }
 
     #endregion
@@ -84,6 +79,8 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private void HandlePaymentRequest(PaymentRequestEvent eventData)
     {
+        _currentCustomer = eventData.Customer;
+
         _interactableStateSwitcher.SetActiveState(true);
         _currentTotalPrice = 0;
         _ui.SetPriceText(0);
@@ -91,10 +88,8 @@ public class BuyingManager : MonoBehaviour, IInitializeable
         _productsData.Clear();
         foreach (GameObject obj in eventData.Products)
         {
-            if (obj.TryGetComponent(out ItemObject item))
-            {
+            if (obj != null && obj.TryGetComponent(out ItemObject item))
                 _productsData.Add(item.GetProductData());
-            }
         }
 
         _productGenerator.SpawnBuyingProducts(eventData.Products);
@@ -102,14 +97,14 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     private void HandlePaymentOperation(UIPaymentCardOperation eventData)
     {
-        if (eventData.IsPlus == false && eventData.Price == 1234)
+        if (!eventData.IsPlus && eventData.Price == 1234)
         {
             _ui.SetPriceText(0);
             _currentTotalPrice = 0;
             return;
         }
 
-        int price = (int)(eventData.Price * GlobalStatsBridge.Instance.GetPricingMod());
+        int price = eventData.Price; // Price already passed as base price, we'll convert to markup
         _currentTotalPrice += eventData.IsPlus ? price : -price;
         _ui.SetPriceText(_currentTotalPrice);
     }
@@ -127,3 +122,4 @@ public class BuyingManager : MonoBehaviour, IInitializeable
 
     #endregion
 }
+#endregion

@@ -26,9 +26,6 @@ public class GlobalData
     [Tooltip("Maximum amount earned in a single transaction.")]
     public int MaxEarned = 0;
 
-    [Tooltip("Multiplier applied to product prices.")]
-    public float PricingMod = 1.2f;
-
     [Tooltip("Total number of deliveries made.")]
     public int TotalDeliveries = 0;
 
@@ -40,6 +37,9 @@ public class GlobalData
 
     [Tooltip("Current shop rating (0-5).")]
     public float Rating = 1;
+
+    [Tooltip("Individual product markups (key = product TitleName).")]
+    public Dictionary<string, float> ProductMarkups = new();
 
     public void ResetDayMoneyStats()
     {

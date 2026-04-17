@@ -60,7 +60,6 @@ public class EntryPoint : BaseEntryPoint
 
         InitializeAll<UIVersionSetter>();
 
-        InitializeAll<UIPricing>();
         InitializeAll<InventoryUI>();
         InitializeAll<ShopUIFactory>();
         InitializeAll<UIShopSideMenu>();

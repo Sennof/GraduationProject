@@ -8,7 +8,7 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     #region Fields
 
     [Header("Settings")]
-    [Tooltip("List of shelves available for product generation.")]
+    [Tooltip("List of shelves (not directly used for generation anymore, kept for potential analytics).")]
     [SerializeField] private List<Shelf> _shelves = new();
     [Tooltip("Folder where generated products are placed.")]
     [SerializeField] private Transform _spawnFolder;
@@ -37,58 +37,21 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     public void SpawnBuyingProducts(GameObject[] products)
     {
         if (_spawningProductsCoroutine != null)
-        {
             StopCoroutine(_spawningProductsCoroutine);
-        }
+
+        _currentRealTotalPrice = CalculateRealTotalPrice(products);
         _spawningProductsCoroutine = StartCoroutine(SpawningProducts(products));
     }
 
     public void DestroyAllGenerated()
     {
         foreach (GameObject obj in _generatedObjects)
-        {
             Destroy(obj);
-        }
-
         _generatedObjects.Clear();
+        _currentRealTotalPrice = 0;
     }
 
     public int GetRealTotalPrice() => _currentRealTotalPrice;
-
-    public GameObject[] GenerateProducts()
-    {
-        int needProductsMin = Random.Range(1, _shelves.Count);
-        List<GameObject> items = new();
-
-        foreach (Shelf shelf in _shelves)
-        {
-            GameObject item = shelf.PrepareProduct();
-            if (item != null)
-            {
-                items.Add(item);
-            }
-        }
-
-        if (items.Count < needProductsMin)
-        {
-            _ratingManager.ReduceRating(0.05f);
-            _ratingManager.AddFeedback("Small assortment...");
-        }
-        else if (items.Count == needProductsMin)
-        {
-            _ratingManager.AddRating(0.025f);
-            _ratingManager.AddFeedback("Found what I needed!");
-        }
-        else
-        {
-            _ratingManager.AddRating(0.05f);
-            _ratingManager.AddFeedback("You have so much stuff!");
-        }
-
-        GlobalStatsBridge.Instance.AddTotalProducts(items.Count);
-
-        return items.ToArray();
-    }
 
     #endregion
 
@@ -100,14 +63,32 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
         if (eventData.Adding)
         {
             if (!_shelves.Contains(eventData.Shelf))
-            {
                 _shelves.Add(eventData.Shelf);
-            }
         }
         else
         {
             _shelves.Remove(eventData.Shelf);
         }
+    }
+
+    #endregion
+
+
+    #region Private Methods
+
+    private int CalculateRealTotalPrice(GameObject[] products)
+    {
+        int total = 0;
+        foreach (GameObject product in products)
+        {
+            if (product != null && product.TryGetComponent(out ItemObject item))
+            {
+                ProductData data = item.GetProductData();
+                if (data != null)
+                    total += data.GetPriceWithMarkup();
+            }
+        }
+        return total;
     }
 
     #endregion
@@ -119,20 +100,19 @@ public class ProductGenerator : MonoBehaviour, IInitializeable
     {
         foreach (GameObject product in products)
         {
+            if (product == null) continue;
+
             if (product.TryGetComponent(out ItemObject item))
             {
                 _generatedObjects.Add(product);
 
-                ProductData data = item.GetProductData();
                 product.GetComponent<Rigidbody>().isKinematic = false;
-                product.GetComponent<Interactable>().SetActiveState(false);
+                if (product.TryGetComponent(out Interactable interactable))
+                    interactable.SetActiveState(false);
 
                 product.transform.SetParent(_spawnFolder);
                 product.transform.position = _spawnFolder.position;
-
                 product.SetActive(true);
-
-                _currentRealTotalPrice += (int)(data.Price * GlobalStatsBridge.Instance.GetPricingMod());
 
                 yield return new WaitForSeconds(_puttingCooldown);
             }

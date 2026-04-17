@@ -1,73 +1,17 @@
-0.9.1f - Cosmetic Update
+0.10.5 - client behavior
 
 ADDED:
-Unpacking Animation
-Added a smooth visual animation when opening newly arrived delivery boxes.
-
-Store State Transition
-Introduced a visual effect that plays when the shop opens or closes for the day.
-
-Delivery Truck Arrival
-A delivery truck now visibly drives by the window when new stock arrives.
-
-Glass Storefront
-Installed transparent glass panels in the store windows for a more realistic look.
-
-Interior Lighting
-Added new light fixtures inside the shop to improve visibility and atmosphere.
-
-Exterior Lighting
-Placed outdoor lamps around the store perimeter for better nighttime curb appeal.
-
-Street Lamp Prefabs
-Added various decorative street light models to enhance the outdoor environment.
-
-Automatic Versioning
-The current game version number is now displayed clearly on the main menu.
+- Feedback bubbles
+- Individual mark-up for products
+- Client's classification by money
 
 CHANGED:
-Updated Wall Material
-Improved the appearance of the store's interior and exterior wall surfaces.
-
-Redesigned Cash Register
-Updated the 3D model of the cash register to look more detailed and modern.
-
-PC and Mouse Model
-Replaced the old computer setup on the counter with a higher-quality model.
-
-Fence Overlap Fix
-Adjusted the fence layout around the property to eliminate ugly overlapping sections.
-
-Roof Texture Update
-Enhanced the roof material to look cleaner and match the store's overall style.
-
-Improved Box Textures
-Delivery boxes now have sharper, more realistic cardboard textures.
-
-Key Prompt Color
-Changed the interaction hint text color to make it easier to read against bright backgrounds.
-
-Crosshair Color
-Adjusted the center dot color for better visibility in both dark and light environments.
-
-Register Card UI
-Fixed the layout and alignment of the product card interface on the cash register screen.
-
-Box Spawn Alignment
-Delivery boxes now appear neatly stacked and aligned on the floor when they arrive.
+- The customer picks up the product from the shelf only when he comes close
+- The customer's review is added once (one customer - one review)
+- The buyer can take more than one item from the rack
+- Markups' UI (pc)
 
 FIXED:
-Global Stats Display
-Resolved an issue where the lifetime earnings and total customers count would not refresh.
-
-Settings Now Save
-Fixed a critical bug where changes to graphics or audio settings were lost after restarting the game.
-
-UI Scrolling Lock
-Using the in-game computer or management tablet no longer accidentally moves the camera or inventory scroll.
-
-Glass Light Glare
-Removed unwanted light reflections from the newly installed storefront windows.
-
-Computer Browser Link
-Corrected the web address displayed on the in-game computer monitor screen.
+- Huge code refactoring
+- Rounding up the rating
+- cash register calculation
