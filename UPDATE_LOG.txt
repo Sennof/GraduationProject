@@ -1,17 +1,14 @@
-0.10.5 - client behavior
+0.11.0 - shelves' configuration
 
 ADDED:
-- Feedback bubbles
-- Individual mark-up for products
-- Client's classification by money
+- Shelf configuration menu
+- The ability to move shelves
+- The ability to change the availability for the client at shelf
+
 
 CHANGED:
-- The customer picks up the product from the shelf only when he comes close
-- The customer's review is added once (one customer - one review)
-- The buyer can take more than one item from the rack
-- Markups' UI (pc)
+- Shelves drop items when they are removed
+
 
 FIXED:
-- Huge code refactoring
-- Rounding up the rating
-- cash register calculation
+- 

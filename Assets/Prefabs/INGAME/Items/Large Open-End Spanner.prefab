@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8791284615531705899}
   - component: {fileID: 7525689688820736784}
   - component: {fileID: 5931631013252184181}
-  - component: {fileID: 6340230789730897347}
+  - component: {fileID: -8338983974309783574}
   m_Layer: 3
   m_Name: Large Open-End Spanner
   m_TagString: Untagged
@@ -164,7 +164,7 @@ MonoBehaviour:
   _actions:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6340230789730897347}
+      - m_Target: {fileID: -8338983974309783574}
         m_TargetAssemblyTypeName: BuildingWrench, Assembly-CSharp
         m_MethodName: InvokeRemoving
         m_Mode: 1
@@ -180,7 +180,7 @@ MonoBehaviour:
   _triggerKey: 323
   _needDistance: 1
   _actDistance: 1.55
---- !u!114 &6340230789730897347
+--- !u!114 &-8338983974309783574
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -68,6 +68,10 @@ public class EntryPoint : BaseEntryPoint
         InitializeAll<DeliveryAnimationHandler>();
 
         InitializeAll<UIWorkerCard>();
+
+        // NEW: Initialize UI systems that need to be ready early
+        InitializeAll<UIShelfConfig>();
+        InitializeAll<CursorManager>();
     }
 
     private void Start()

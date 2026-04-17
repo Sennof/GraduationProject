@@ -31,7 +31,15 @@ public class BuildingWrench : MonoBehaviour, IInitializeable
             GameObject hittedObject = _interactingObject.GetTargetObject();
             if (hittedObject != null)
             {
-                EventBus<RemoveBuildingEvent>.Raise(new RemoveBuildingEvent { Target = hittedObject });
+                ShelfConfigurator configurator = hittedObject.GetComponent<ShelfConfigurator>();
+                if (configurator != null)
+                {
+                    configurator.ShowConfigMenu();
+                }
+                else
+                {
+                    EventBus<RemoveBuildingEvent>.Raise(new RemoveBuildingEvent { Target = hittedObject });
+                }
             }
         }
     }
