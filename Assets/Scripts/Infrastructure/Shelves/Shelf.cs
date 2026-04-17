@@ -59,7 +59,6 @@ public class Shelf : MonoBehaviour, IInitializeable
 
     public GameObject PrepareProduct()
     {
-        // Try to find any slot with items
         foreach (ShelfSlot slot in _slots)
         {
             GameObject found = slot.TryGetItem();
@@ -71,13 +70,23 @@ public class Shelf : MonoBehaviour, IInitializeable
         return null;
     }
 
+    public void ReturnProduct(GameObject product)
+    {
+        foreach (ShelfSlot slot in _slots)
+        {
+            if (slot.CanAcceptItem(product))
+            {
+                slot.ReturnItem(product);
+                return;
+            }
+        }
+        Destroy(product);
+    }
+
     public Vector3 GetNavPointPosition() => _navPoint.position;
 
     public bool IsVisitable() => _isVisitable;
 
-    /// <summary>
-    /// Returns the total number of items currently on this shelf.
-    /// </summary>
     public int GetTotalItemCount()
     {
         int count = 0;

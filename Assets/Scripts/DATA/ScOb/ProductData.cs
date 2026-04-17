@@ -11,7 +11,7 @@ public class ProductData : InGameBaseData
 
     [Tooltip("Default markup applied to this product (0.2 = +20%).")]
     [Range(0f, 2f)]
-    public float DefaultMarkup = 0.2f;
+    public float DefaultMarkup = 0.15f;
 
     #endregion
 

@@ -120,6 +120,8 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
     private void SpawnAgent()
     {
+        if (_agentPrefabs.Count == 0) return;
+
         GameObject prefab = _agentPrefabs[Random.Range(0, _agentPrefabs.Count)];
         GameObject agent = Instantiate(prefab, _spawnPoint, Quaternion.identity, _folder);
         _activeAgents.Add(agent);
@@ -127,7 +129,49 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         if (agent.TryGetComponent(out AICustomer customer))
         {
             Shelf[] targetShelves = GenerateTargetShelves();
-            customer.Initialize(targetShelves, this);
+            CustomerClass customerClass = ChooseCustomerClassByRating();
+            customer.Initialize(targetShelves, this, customerClass);
+        }
+    }
+
+    private CustomerClass ChooseCustomerClassByRating()
+    {
+        float rating = GlobalStatsBridge.Instance.GetRating();
+        float random = Random.value;
+
+        if (rating < 1f)
+        {
+            if (random < 0.95f) return CustomerClass.Poor;
+            else if (random < 0.995f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 2f)
+        {
+            if (random < 0.85f) return CustomerClass.Poor;
+            else if (random < 0.985f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 3f)
+        {
+            if (random < 0.60f) return CustomerClass.Poor;
+            else if (random < 0.95f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 4f)
+        {
+            if (random < 0.33f) return CustomerClass.Poor;
+            else if (random < 0.93f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else if (rating < 5f)
+        {
+            if (random < 0.05f) return CustomerClass.Poor;
+            else if (random < 0.85f) return CustomerClass.Middle;
+            else return CustomerClass.Rich;
+        }
+        else
+        {
+            return CustomerClass.Rich;
         }
     }
 
@@ -234,23 +278,15 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
 
         yield return new WaitUntil(() =>
         {
-            if (first == null)
-            {
-                return true;
-            }
+            if (first == null) return true;
 
             Vector3 pos1 = first.transform.position;
             Vector3 pos2 = _buyingPlacePoint;
-
             float flatDistance = Vector2.Distance(new Vector2(pos1.x, pos1.z), new Vector2(pos2.x, pos2.z));
-
             return flatDistance < (first.GetMinReachDistance() + 0.2f);
         });
 
-        if (first == null)
-        {
-            yield break;
-        }
+        if (first == null) yield break;
 
         GameObject[] products = first.GetProducts();
 
@@ -294,9 +330,7 @@ public class AIAgentsManager : MonoBehaviour, IInitializeable
         if (data.Adding)
         {
             if (!_availableShelves.Contains(data.Shelf))
-            {
                 _availableShelves.Add(data.Shelf);
-            }
         }
         else
         {

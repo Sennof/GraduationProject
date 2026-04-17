@@ -29,10 +29,17 @@ public class AICustomer : MonoBehaviour
     private AIAgentsManager _manager;
     private List<GameObject> _collectedProducts = new List<GameObject>();
 
-    // Session rating tracking
     private float _sessionRatingDelta = 0f;
     private List<string> _sessionFeedbacks = new List<string>();
     private bool _sessionFinalized = false;
+
+    private CustomerClass _customerClass;
+
+    // Flags for current shelf feedback
+    private bool _shelfTooExpensive = false;
+    private bool _shelfEmpty = false;
+    private bool _shelfNotEnough = false;
+    private bool _shelfGreatPriceShown = false;
 
     private enum CustomerState
     {
@@ -63,10 +70,11 @@ public class AICustomer : MonoBehaviour
 
     #region Public Methods
 
-    public void Initialize(Shelf[] targetShelves, AIAgentsManager manager)
+    public void Initialize(Shelf[] targetShelves, AIAgentsManager manager, CustomerClass customerClass)
     {
         _targetShelves = targetShelves;
         _manager = manager;
+        _customerClass = customerClass;
         _collectedProducts.Clear();
         _currentShelfIndex = 0;
         _state = CustomerState.Shopping;
@@ -111,24 +119,17 @@ public class AICustomer : MonoBehaviour
 
     public GameObject[] GetProducts() => _collectedProducts.ToArray();
 
-    /// <summary>
-    /// Shows a feedback message above the customer's head.
-    /// </summary>
     public void ShowFeedback(string message)
     {
         if (_feedbackBubble != null)
             _feedbackBubble.ShowMessage(message);
     }
 
-    /// <summary>
-    /// Called when the customer session ends (successful purchase or leaving without buying).
-    /// </summary>
     public void FinalizeSession(bool wasSuccessfulPurchase, int totalPriceDifference = 0)
     {
         if (_sessionFinalized) return;
         _sessionFinalized = true;
 
-        // Add purchase-related feedback if it was a successful transaction
         if (wasSuccessfulPurchase)
         {
             if (totalPriceDifference == 0)
@@ -152,7 +153,6 @@ public class AICustomer : MonoBehaviour
         }
         else
         {
-            // Leaving without buying anything
             if (_collectedProducts.Count == 0)
             {
                 _sessionRatingDelta -= 0.05f;
@@ -161,7 +161,6 @@ public class AICustomer : MonoBehaviour
             }
         }
 
-        // Apply accumulated rating delta and feedbacks to the global manager
         if (Mathf.Abs(_sessionRatingDelta) > 0.001f || _sessionFeedbacks.Count > 0)
         {
             string combinedFeedback = _sessionFeedbacks.Count > 0 ? string.Join(" ", _sessionFeedbacks) : "";
@@ -184,9 +183,7 @@ public class AICustomer : MonoBehaviour
         else
         {
             if (_navMeshAgent.enabled)
-            {
                 _navMeshAgent.isStopped = true;
-            }
 
             _navMeshAgent.enabled = false;
             _navMeshObstacle.enabled = true;
@@ -219,7 +216,6 @@ public class AICustomer : MonoBehaviour
     private IEnumerator MoveToPointAndExit(Vector3 exitPoint)
     {
         yield return StartCoroutine(MoveToPoint(exitPoint));
-        // Session will be finalized when agent is killed by manager
     }
 
     private IEnumerator FollowShelvesRoutine()
@@ -235,41 +231,77 @@ public class AICustomer : MonoBehaviour
             {
                 SetNavigationMode(false);
 
-                // Determine how many items customer wants from this shelf based on rating
+                // Reset shelf flags
+                _shelfTooExpensive = false;
+                _shelfEmpty = false;
+                _shelfNotEnough = false;
+                _shelfGreatPriceShown = false;
+
                 int desiredAmount = GetDesiredItemCount();
                 int takenCount = 0;
+                int attemptedCount = 0; // how many items we actually tried to take
 
                 for (int i = 0; i < desiredAmount; i++)
                 {
                     GameObject product = targetShelf.PrepareProduct();
-                    if (product != null)
+                    if (product == null)
                     {
-                        _collectedProducts.Add(product);
-                        takenCount++;
+                        _shelfEmpty = true;
+                        break;
                     }
-                    else
+
+                    attemptedCount++;
+                    if (product.TryGetComponent(out ItemObject item))
                     {
-                        break; // No more items on shelf
+                        ProductData data = item.GetProductData();
+                        if (data != null)
+                        {
+                            float currentMarkup = GlobalStatsBridge.Instance.GetProductMarkup(data.TitleName);
+                            float maxAllowedMarkup = GetMaxAllowedMarkup();
+
+                            if (currentMarkup > maxAllowedMarkup)
+                            {
+                                targetShelf.ReturnProduct(product);
+                                _shelfTooExpensive = true;
+                                _sessionRatingDelta -= 0.05f;
+                                _sessionFeedbacks.Add("Too expensive!");
+                                continue;
+                            }
+
+                            _collectedProducts.Add(product);
+                            takenCount++;
+
+                            if (!_shelfGreatPriceShown && Random.value < 0.2f)
+                            {
+                                ShowFeedback("Great price!");
+                                _sessionRatingDelta += 0.1f;
+                                _sessionFeedbacks.Add("Great price!");
+                                _shelfGreatPriceShown = true;
+                            }
+                        }
                     }
                 }
 
-                if (takenCount == 0)
+                // Determine feedback priority
+                if (_shelfTooExpensive)
                 {
-                    // Shelf was completely empty
+                    ShowFeedback("Too expensive!");
+                }
+                else if (_shelfEmpty)
+                {
                     _sessionRatingDelta -= 0.025f;
                     _sessionFeedbacks.Add("Empty shelf...");
                     ShowFeedback("Empty shelf!");
                 }
-                else if (takenCount < desiredAmount)
+                else if (takenCount < desiredAmount && attemptedCount > 0)
                 {
-                    // Not enough items
+                    _shelfNotEnough = true;
                     _sessionRatingDelta -= 0.01f;
                     _sessionFeedbacks.Add("Not enough items...");
                     ShowFeedback("Not enough...");
                 }
-                else if (Random.value < 0.25f)
+                else if (takenCount == desiredAmount && Random.value < 0.25f)
                 {
-                    // 25% chance to show positive feedback when shelf has items
                     ShowFeedback("Just what I needed!");
                 }
 
@@ -290,10 +322,25 @@ public class AICustomer : MonoBehaviour
         float rating = RatingManager.Instance.GetRating();
 
         if (rating < 1f) return 1;
-        else if (rating < 2f) return Random.Range(1, 3);  // 1-2
-        else if (rating < 3f) return Random.Range(2, 4);  // 2-3
-        else if (rating < 4f) return Random.Range(3, 5);  // 3-4
-        else return Random.Range(4, 7);                   // 4-6
+        else if (rating < 2f) return Random.Range(1, 3);
+        else if (rating < 3f) return Random.Range(2, 4);
+        else if (rating < 4f) return Random.Range(3, 5);
+        else return Random.Range(4, 7);
+    }
+
+    private float GetMaxAllowedMarkup()
+    {
+        switch (_customerClass)
+        {
+            case CustomerClass.Poor:
+                return 0.2f;
+            case CustomerClass.Middle:
+                return 0.5f;
+            case CustomerClass.Rich:
+                return float.MaxValue;
+            default:
+                return 0.2f;
+        }
     }
 
     #endregion

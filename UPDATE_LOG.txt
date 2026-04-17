@@ -1,8 +1,9 @@
-0.10.4f - fixies
+0.10.5 - client behavior
 
 ADDED:
 - Feedback bubbles
 - Individual mark-up for products
+- Client's classification by money
 
 CHANGED:
 - The customer picks up the product from the shelf only when he comes close
