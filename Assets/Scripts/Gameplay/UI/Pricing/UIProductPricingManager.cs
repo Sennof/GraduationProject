@@ -28,6 +28,8 @@ public class UIProductPricingManager : MonoBehaviour
     private Dictionary<string, List<ProductData>> _categoryProducts = new();
     private List<UIProductPricingCard> _activeCards = new();
 
+    private EventBinding<OnShopStateChanging> _shopStateBinding;
+
     #endregion
 
 
@@ -38,6 +40,14 @@ public class UIProductPricingManager : MonoBehaviour
         ValidateSetup();
         LoadAllCategories();
         ShowCategory(_currentCategoryIndex);
+
+        _shopStateBinding = new EventBinding<OnShopStateChanging>(OnShopStateChanged);
+        EventBus<OnShopStateChanging>.Register(_shopStateBinding);
+    }
+
+    private void OnDestroy()
+    {
+        EventBus<OnShopStateChanging>.Deregister(_shopStateBinding);
     }
 
     #endregion
@@ -45,10 +55,6 @@ public class UIProductPricingManager : MonoBehaviour
 
     #region Public Methods
 
-    /// <summary>
-    /// Switches to the category with the given index.
-    /// Use -1 to show all products.
-    /// </summary>
     public void ShowCategory(int categoryIndex)
     {
         if (categoryIndex < -1 || categoryIndex >= _resourcePaths.Length)
@@ -65,11 +71,10 @@ public class UIProductPricingManager : MonoBehaviour
             _categoryTitleText.text = "Все";
         else
             _categoryTitleText.text = _categoryNames[categoryIndex];
+
+        UpdateSlidersInteractable();
     }
 
-    /// <summary>
-    /// Switches to the category with the given display name.
-    /// </summary>
     public void ShowCategory(string categoryName)
     {
         int index = System.Array.IndexOf(_categoryNames, categoryName);
@@ -115,7 +120,6 @@ public class UIProductPricingManager : MonoBehaviour
             }
         }
 
-        // Build "All" category by combining all unique products
         HashSet<ProductData> allUnique = new HashSet<ProductData>();
         foreach (var list in _categoryProducts.Values)
             allUnique.UnionWith(list);
@@ -154,9 +158,26 @@ public class UIProductPricingManager : MonoBehaviour
         }
         _activeCards.Clear();
 
-        // Additional safety for any leftover children
         foreach (Transform child in _contentContainer)
             Destroy(child.gameObject);
+    }
+
+    private void UpdateSlidersInteractable()
+    {
+        bool shopOpen = GlobalStatsBridge.Instance.GetShopOpenClosed();
+        // Sliders should be interactable only when shop is closed
+        bool interactable = !shopOpen;
+
+        foreach (var card in _activeCards)
+        {
+            if (card != null)
+                card.SetSliderInteractable(interactable);
+        }
+    }
+
+    private void OnShopStateChanged(OnShopStateChanging eventData)
+    {
+        UpdateSlidersInteractable();
     }
 
     #endregion

@@ -38,6 +38,15 @@ public class UIProductPricingCard : MonoBehaviour
         _markupSlider.onValueChanged.AddListener(OnSliderChanged);
     }
 
+    /// <summary>
+    /// Enables or disables the markup slider.
+    /// </summary>
+    public void SetSliderInteractable(bool interactable)
+    {
+        if (_markupSlider != null)
+            _markupSlider.interactable = interactable;
+    }
+
     #endregion
 
 

@@ -1,4 +1,4 @@
-0.10.4 - customer behavior
+0.10.4f - fixies
 
 ADDED:
 - Feedback bubbles
