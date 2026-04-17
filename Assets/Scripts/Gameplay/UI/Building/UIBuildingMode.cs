@@ -21,6 +21,7 @@ public class UIBuildingMode : MonoBehaviour
     private KeyCode _buildingModeKeyCode;
     private KeyCode _rotationKeyCode;
     private KeyCode _buildKeyCode;
+    private KeyCode _cancelRelocationKeyCode;
     private int _amountLeft = 1;
 
     #endregion
@@ -28,11 +29,12 @@ public class UIBuildingMode : MonoBehaviour
 
     #region Public Methods
 
-    public void Initialize(KeyCode buildingMode, KeyCode rotation, KeyCode build)
+    public void Initialize(KeyCode buildingMode, KeyCode rotation, KeyCode build, KeyCode cancelRelocation)
     {
         _buildingModeKeyCode = buildingMode;
         _rotationKeyCode = rotation;
         _buildKeyCode = build;
+        _cancelRelocationKeyCode = cancelRelocation;
     }
 
     public void TurnOffUI()
@@ -42,10 +44,7 @@ public class UIBuildingMode : MonoBehaviour
 
     public void SetUI(int id, int amountLeft)
     {
-        if (amountLeft != -1)
-        {
-            _amountLeft = amountLeft;
-        }
+        if (amountLeft != -1) _amountLeft = amountLeft;
 
         _sideWindowSwitcher.OffCurrent();
         _sideWindowSwitcher.SetOn(id);
@@ -59,6 +58,14 @@ public class UIBuildingMode : MonoBehaviour
             _enabledModeText.text = $"Place: {_buildKeyCode}\nRotate: {_rotationKeyCode}\nExit Build: {_buildingModeKeyCode}";
             _amountLeftText.text = $"Objects left: {_amountLeft}";
         }
+    }
+
+    public void SetRelocationText(string text)
+    {
+        _sideWindowSwitcher.OffCurrent();
+        _sideWindowSwitcher.SetOn(1);
+        _enabledModeText.text = text;
+        _amountLeftText.text = "";
     }
 
     #endregion

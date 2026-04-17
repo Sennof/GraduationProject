@@ -187,6 +187,7 @@ GameObject:
   - component: {fileID: 4446439785347681256}
   - component: {fileID: 900464208271509575}
   - component: {fileID: -2366440155526270748}
+  - component: {fileID: -8728248502444313329}
   m_Layer: 9
   m_Name: CheapShelfBig
   m_TagString: Untagged
@@ -234,6 +235,7 @@ MonoBehaviour:
   - {fileID: 3541827072808218371}
   _objectSize: 2
   _navPoint: {fileID: 5819035011983247130}
+  _isVisitable: 1
 --- !u!114 &4446439785347681256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -289,6 +291,18 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 1
   m_Center: {x: -0.007037878, y: 1.297805, z: 0.007038116}
   m_TimeToStationary: 0.5
+--- !u!114 &-8728248502444313329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2443973780518324929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec1f2efa29925d94b82bea6f4edc1a35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2574119497638978466
 GameObject:
   m_ObjectHideFlags: 0

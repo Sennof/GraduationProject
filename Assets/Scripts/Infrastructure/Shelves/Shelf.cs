@@ -87,6 +87,32 @@ public class Shelf : MonoBehaviour, IInitializeable
 
     public bool IsVisitable() => _isVisitable;
 
+    public void SetVisitable(bool visitable)
+    {
+        if (_isVisitable == visitable) return;
+
+        _isVisitable = visitable;
+
+        if (_isVisitable)
+        {
+            EventBus<OnShelfInitializationEvent>.Raise(new OnShelfInitializationEvent
+            {
+                GlobalPosition = _navPoint.position,
+                Adding = true,
+                Shelf = this
+            });
+        }
+        else
+        {
+            EventBus<OnShelfInitializationEvent>.Raise(new OnShelfInitializationEvent
+            {
+                GlobalPosition = _navPoint.position,
+                Adding = false,
+                Shelf = this
+            });
+        }
+    }
+
     public int GetTotalItemCount()
     {
         int count = 0;

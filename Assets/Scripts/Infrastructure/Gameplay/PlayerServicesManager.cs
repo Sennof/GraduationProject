@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class PlayerServicesManager : MonoBehaviour, IInitializeable
 {
+    #region Singleton
+
+    public static PlayerServicesManager Instance { get; private set; }
+
+    #endregion
+
+
     #region Fields
 
     [Header("Player Components")]
@@ -25,6 +32,12 @@ public class PlayerServicesManager : MonoBehaviour, IInitializeable
 
     public void Initialize()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
         SetOnTotal();
     }
 
@@ -49,37 +62,22 @@ public class PlayerServicesManager : MonoBehaviour, IInitializeable
     public void TurnOffLooking()
     {
         _firstPersonLook.Disable();
-
-        if (_zoom != null)
-        {
-            _zoom.Disable();
-        }
+        if (_zoom != null) _zoom.Disable();
     }
 
     public void TurnOnLooking()
     {
         _firstPersonLook.Enable();
-
-        if (_zoom != null)
-        {
-            _zoom.Enable();
-        }
+        if (_zoom != null) _zoom.Enable();
     }
 
     public void TurnOffMovements() => _firstPersonMovement.Disable();
-
     public void TurnOnMovements() => _firstPersonMovement.Enable();
-
     public void TurnOffAudio() => _firstPersonAudio.Disable();
-
     public void TurnOnAudio() => _firstPersonAudio.Enable();
-
     public void TurnOffJumping() => _jump.SetDisabled();
-
     public void TurnOnJumping() => _jump.SetEnabled();
-
     public void TurnOffCrouching() => _crouch.Disable();
-
     public void TurnOnCrouching() => _crouch.Enable();
 
     #endregion
