@@ -1,13 +1,11 @@
-0.11.0 - shelves' configuration
+0.11.0 - unity version change
 
 ADDED:
-- Shelf configuration menu
-- The ability to move shelves
-- The ability to change the availability for the client at shelf
+-
 
 
 CHANGED:
-- Shelves drop items when they are removed
+- 
 
 
 FIXED:

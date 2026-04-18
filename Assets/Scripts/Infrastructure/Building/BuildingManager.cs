@@ -150,7 +150,7 @@ public class BuildingManager : MonoBehaviour, IInitializeable
     {
         _buildedObjectColliders.Clear();
 
-        BuildedObject[] buildedObjects = GameObject.FindObjectsByType<BuildedObject>(0);
+        BuildedObject[] buildedObjects = GameObject.FindObjectsByType<BuildedObject>();
         foreach (BuildedObject obj in buildedObjects)
         {
             _buildedObjectColliders.Add(obj);
