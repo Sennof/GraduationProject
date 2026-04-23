@@ -117,6 +117,30 @@ public struct PaymentResponseEvent : IEvent { }
 
 #endregion
 
+#region PriceTags
+
+public struct PriceTagMakerDataRequestingEvent : IEvent
+{
+    public GameObject Target;
+}
+
+public struct PriceTagMakerDataResponsingEvent : IEvent
+{
+    public GameObject Target;
+    public Transform RaycastStartPoint;
+    public Inventory Inventory;
+}
+
+public struct CreatePriceTagsRequestEvent : IEvent
+{
+    public ProductData ProductData;
+    public float Markup;
+    public int Quantity;
+    public PriceTagMaker TargetMaker;
+}
+
+#endregion
+
 #region Else
 
 public struct UnpackingEvent : IEvent

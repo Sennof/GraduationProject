@@ -82,6 +82,14 @@ public class ShelfSlot : MonoBehaviour
 
         int index = Random.Range(0, _keptObjects.Count);
         GameObject item = _keptObjects[index];
+
+        if (item.TryGetComponent(out ItemObject itemObj))
+        {
+            ProductData data = itemObj.GetProductData();
+            if (data != null && !data.IsSellable)
+                return null;
+        }
+
         _keptObjects.RemoveAt(index);
         item.SetActive(false);
         return item;

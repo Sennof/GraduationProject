@@ -77,6 +77,10 @@ public class InteractingObject : MonoBehaviour
 
     public void SetOutHands() => _inHands = false;
 
+    public bool GetIsInHands() => _inHands;
+
+    public Transform GetRaycastStartPoint() => _raycastStartPoint;
+
     #endregion
 
 

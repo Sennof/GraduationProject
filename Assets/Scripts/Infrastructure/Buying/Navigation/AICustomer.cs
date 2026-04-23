@@ -256,7 +256,7 @@ public class AICustomer : MonoBehaviour
                         ProductData data = item.GetProductData();
                         if (data != null)
                         {
-                            float currentMarkup = GlobalStatsBridge.Instance.GetProductMarkup(data.TitleName);
+                            float currentMarkup = targetShelf.GetProductMarkup(data);
                             float maxAllowedMarkup = GetMaxAllowedMarkup();
 
                             if (currentMarkup > maxAllowedMarkup)

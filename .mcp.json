@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "unity": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "--project", "Packages/com.sebastiankurvers.agent-bridge/UnityMCP~/UnityMCP.csproj"]
+    }
+  }
+}

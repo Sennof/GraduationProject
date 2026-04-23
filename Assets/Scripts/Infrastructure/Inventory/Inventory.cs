@@ -181,6 +181,8 @@ public class Inventory : MonoBehaviour, IInitializable
 
     public ItemObject GetCurrentItemManager() => _keptItemObjects[_currentItemSlotIndex];
 
+    public ItemObject GetOtherSlotItemManager() => _keptItemObjects[1 - _currentItemSlotIndex];
+
     #endregion
 
 

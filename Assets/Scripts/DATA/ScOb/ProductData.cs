@@ -13,6 +13,9 @@ public class ProductData : InGameBaseData
     [Range(0f, 2f)]
     public float DefaultMarkup = 0.15f;
 
+    [Tooltip("Whether customers can take this product from shelves. Set false for non-sellable props.")]
+    public bool IsSellable = true;
+
     #endregion
 
 

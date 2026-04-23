@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "agent-vault": {
+      "command": "node",
+      "args": [".agent-vault/.runtime/node_modules/@fancyrobot/agent-vault/dist/mcp-server.js"],
+      "cwd": "/mnt/c/Users/Sennof/Desktop/GraduationProject"
+    },
+    "claude-memory": {
+      "command": "npx",
+      "args": ["-y", "claude-memory-mcp"],
+      "env": {
+        "MEMORY_PATH": "/mnt/c/Users/Sennof/Desktop/GraduationProject/ProjectMemory"
+      }
+    },
+    "unity-bridge": {
+      "command": "npx",
+      "args": ["-y", "@sebastiankurvers/agent-bridge-for-unity"],
+      "cwd": "/mnt/c/Users/Sennof/Desktop/GraduationProject"
+    }
+  }
+}

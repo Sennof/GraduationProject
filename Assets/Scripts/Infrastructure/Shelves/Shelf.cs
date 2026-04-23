@@ -19,6 +19,11 @@ public class Shelf : MonoBehaviour, IInitializeable
     [Tooltip("Can customers visit this shelf?")]
     [SerializeField] private bool _isVisitable = true;
 
+    [Header("Price Tags")]
+    [Tooltip("Transform anchor points where price tags can be placed.")]
+    [SerializeField] private Transform[] _priceTagAttachPoints;
+
+    private Dictionary<ProductData, PriceTag> _priceTags = new();
     private EventBinding<ShelfDataResponsingEvent> _dataBinding;
     private bool _initialized = false;
 
@@ -122,6 +127,47 @@ public class Shelf : MonoBehaviour, IInitializeable
         }
         return count;
     }
+
+    public void RegisterPriceTag(PriceTag tag)
+    {
+        ProductData product = tag.GetTargetProduct();
+        if (product == null) return;
+
+        if (_priceTags.TryGetValue(product, out PriceTag existing) && existing != tag)
+            existing.Detach();
+
+        _priceTags[product] = tag;
+    }
+
+    public void UnregisterPriceTag(PriceTag tag)
+    {
+        ProductData product = tag.GetTargetProduct();
+        if (product == null) return;
+
+        if (_priceTags.TryGetValue(product, out PriceTag registered) && registered == tag)
+            _priceTags.Remove(product);
+    }
+
+    public float GetProductMarkup(ProductData data)
+    {
+        if (data == null) return 0f;
+        if (_priceTags.TryGetValue(data, out PriceTag tag))
+            return tag.GetMarkup();
+        return GlobalStatsBridge.Instance.GetProductMarkup(data.TitleName);
+    }
+
+    public Transform GetNextFreeAttachPoint()
+    {
+        if (_priceTagAttachPoints == null) return null;
+        foreach (Transform point in _priceTagAttachPoints)
+        {
+            if (point != null && point.childCount == 0)
+                return point;
+        }
+        return null;
+    }
+
+    public bool HasPriceTagForProduct(ProductData data) => data != null && _priceTags.ContainsKey(data);
 
     #endregion
 

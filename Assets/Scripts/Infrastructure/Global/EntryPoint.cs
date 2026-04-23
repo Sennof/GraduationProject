@@ -37,6 +37,7 @@ public class EntryPoint : BaseEntryPoint
         InitializeAll<ShelfInitializer>();
         InitializeAll<PenKnivesInitializer>();
         InitializeAll<BuildingWrenchInitializer>();
+        InitializeAll<PriceTagMakerInitializer>();
 
         InitializeAll<PlayerServicesManager>();
         InitializeAll<UIChecking>();
@@ -56,6 +57,8 @@ public class EntryPoint : BaseEntryPoint
         InitializeAll<Shelf>();
         InitializeAll<PenKnife>();
         InitializeAll<BuildingWrench>();
+        InitializeAll<PriceTagMaker>();
+        InitializeAll<PriceTagHanger>();
         InitializeAll<BuildedObject>();
 
         InitializeAll<UIVersionSetter>();

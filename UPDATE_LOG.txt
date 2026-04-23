@@ -1,12 +1,5 @@
-0.11.0 - unity version change
+0.12.1 - unity version change
 
 ADDED:
--
-
-
-CHANGED:
-- 
-
-
-FIXED:
-- 
+- AI agent's bridge
+- price tags (in code)
