@@ -27,6 +27,9 @@
 # Visual Studio cache directory
 .vs/
 
+#AI Agent
+.agent-vault
+
 # Gradle cache directory
 .gradle/
 
